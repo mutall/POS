@@ -1,7 +1,17 @@
-
 body{
+  font-family: 'Sulphur Point', sans-serif;
     font-size: 20px;
     background-color:  #F4511E;
+}
+
+h3{
+  color: #fefefe;
+  text-align: center;
+  /* text-decoration: underline; */
+  /* text-decoration-line: underline; */
+  font-size: 32px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-style: normal;
 }
 .container{
     height: 100vh;
@@ -32,10 +42,12 @@ body{
 #myBtn{
     padding: 20px;
     border-radius: 25px;
-    font-weight: bolder;
+    font-weight: 400;
     background: #fefefe;
     outline: none;
     border: 1px solid #F4511E;
+    font-family: 'Sulphur Point', sans-serif;
+
 }
 
 #myBtn:hover{
@@ -59,23 +71,21 @@ body{
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-    -webkit-transition: width 2s, height 4s; /* For Safari 3.1 to 6.0 */
-    transition: width 2s, height 4s;
-}
+  }
   
   
   /* Modal Content/Box */
   .modal-content {
-    background-color: #fefefe;
+    background-color: #FBE9E7;
     margin: 15% auto; /* 15% from the top and centered */
     padding: 20px;
-    border: 1px solid #888;
+    border: 2px outset #F4511E;
     width: 40%; /* Could be more or less, depending on screen size */
   }
   
   /* The Close Button */
   .close {
-    color: #aaa;
+    color: #F4511E;
     float: right;
     font-size: 28px;
     font-weight: bold;
@@ -83,16 +93,40 @@ body{
   
   .close:hover,
   .close:focus {
-    color: black;
+    color: #c62828;
     text-decoration: none;
     cursor: pointer;
   } 
 
-  .buttons{
-      display: block;
+  .buttons > *{
+    outline: none;
+    border: none;
+    width: 40%;
+    font-size: 12px;
+    padding: 10px;
+    border-radius: 20px; 
+    transition: 1s ease-in-out;
   }
+  .buttons > *:hover{
+  transform: scale(1.1);
+  z-index: 1;
+  color: #fefefe;
+}
+
+
+  #upload-btn{
+    background-color: #4CAF50;
+    
+  }
+
+  #reset-btn{
+    background-color: #FFC107;
+    
+  }
+
   label{
       font-size: 13px;
+      display: block;
   }
 
   .row{
@@ -128,4 +162,18 @@ body{
   
   .success-alert .closebtn:hover {
     color: black;
+  }
+
+  #form input[type =text]{
+    border: 1px solid #F4511E;
+    border-radius: 25px;
+    font-size: 15px;
+    text-align: center;
+    padding: 0 10px;
+  }
+
+  #form input[type =text]:focus{
+    border: 1px solid #4CAF50;
+    outline: none;
+
   }
