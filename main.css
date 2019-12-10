@@ -1,0 +1,131 @@
+
+body{
+    font-size: 20px;
+    background-color:  #F4511E;
+}
+.container{
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+#barcode{
+    margin-top: 20px;;
+    background-color: #fff;
+    width: 60%;
+    padding: 20px 0;
+    border-radius: 20px;
+    border: 1px solid #F4511E;
+    text-align: center;
+    animation-delay: 5s;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+    margin-bottom: 20px;
+}
+
+#barcode:focus{
+    outline: none;
+    animation: none;
+}
+
+#myBtn{
+    padding: 20px;
+    border-radius: 25px;
+    font-weight: bolder;
+    background: #fefefe;
+    outline: none;
+    border: 1px solid #F4511E;
+}
+
+#myBtn:hover{
+    color: #F4511E;
+    background: #fefefe;
+    outline: none;
+    border: 1px solid #F4511E;
+    font-weight: bolder;
+}
+
+
+ /* The Modal (background) */
+ .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    -webkit-transition: width 2s, height 4s; /* For Safari 3.1 to 6.0 */
+    transition: width 2s, height 4s;
+}
+  
+  
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%; /* Could be more or less, depending on screen size */
+  }
+  
+  /* The Close Button */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  } 
+
+  .buttons{
+      display: block;
+  }
+  label{
+      font-size: 13px;
+  }
+
+  .row{
+      margin: 10px auto;
+      width: 100%;
+  }
+  form{
+      margin: 0 auto;
+      width: 50%;
+   }
+/* The alert message box */
+.success-alert {
+    display: none;
+    width: 30%;
+    margin: 0 auto;  
+    border-radius: 25px;
+    padding: 10px;
+    font-size: 11px;
+    background-color: #6ABC6D; /* GREEN */
+    color: white;
+  }
+
+  .success-alert .closebtn {
+    margin-left: 15px;
+    color: white;
+    font-weight: bold;
+    float: right;
+    font-size: 22px;
+    line-height: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .success-alert .closebtn:hover {
+    color: black;
+  }
