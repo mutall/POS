@@ -17,63 +17,119 @@ class BarCode {
         // Get the <span> element that closes the modal
         this.span = document.getElementsByClassName("close")[0];
 
+        //get the form which is used to submit
+        this.form = document.querySelector("#form");
+
     }
 
     setListeners() {
         this.input.focus();
         // When the user clicks on the button, open the modal
-        this.btn.onclick = ()=> {
+        this.btn.onclick = () => {
+            //show the modal form
             this.modal.style.display = "block";
-            this.animateCSS("#myModal", "zoomIn");
+            //remove zoom out animation 
+            this.modal.classList.remove("zoomOut");
+
+            //set an animation to the modal
+            this.modal.className += " zoomIn";
         }
 
         // When the user clicks on <span> (x), close the modal
-        this.span.onclick = () =>{
+        this.span.onclick = () => {
+            //remove zoom in animation
+            this.modal.classList.remove("zoomIn");
+            //add zoomout animation
+            this.modal.className += " zoomOut";
+            //hide the modal
             this.modal.style.display = "none";
         }
 
         // When the user clicks anywhere outside of the modal, close it
-        window.onclick = (event)=> {
+        window.onclick = (event) => {
             if (event.target == this.modal) {
+                //remove zoom in animation
+                this.modal.classList.remove("zoomIn");
+                //add zoomout animation
+                this.modal.className += " zoomOut";
+
                 this.modal.style.display = "none";
             }
         }
-        this.input.onchange = (e) =>this.sendToDb(e.target.value)
+
+        //set an on change whenever the input changes
+        this.input.onchange = (e) => this.sendToDb(JSON.stringify({
+            barcode: e.target.value
+        }))
+
+        //add an onsubmit to the form 
+        this.form.onsubmit = (e) => {
+            e.preventDefault();
+            this.sendToDb(new FormData(this.form));
+        }
     }
 
 
-    async sendToDb(barcode) {
+    async sendToDb(data) {
         var response = await fetch("insert.php", {
             method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                barcode: barcode
-            })
+            body: data
         });
-    
-        if (response.status == 404) {
-            console.log("Barcode not found");
-            let barcode = this.input.value
-            document.querySelector("#unique").value = barcode;
-            this.btn.click()
-            // launchForm();
-        } else if (response.status == 201) {
-            console.log("value created");
-            const add_product = document.querySelector(".add-product");
-            add_product.style.display = "block";
-            this.input.value = "";
-        }else if(response.status == 202){
-            const quantity = document.querySelector(".quantity");
-            quantity.style.display = "block";
-            this.input.value = "";
-        
-        }else {
-            console.log(response.status);
-            console.log("something unexpected happened");
+
+        switch (response.status) {
+            //this is response code gotten after successfully inserted a new product
+            case 201:
+                //show an alert telling the user that a product has been added
+                document.querySelector(".add-product").style.display = "block";
+
+                //dismiss the alert after 2 seconds
+                setTimeout(()=>{
+                    document.querySelector(".add-product").style.display = "none";
+                }, 2000)
+                
+                //remove the entrance animation
+                this.modal.classList.remove("zoomIn")
+                //add a close animation
+                this.modal.className += " zoomOut";
+                //dismiss modal
+                this.modal.style.display = "none";
+                //clear the input 
+                this.input.value = "";
+
+                break;
+
+                //this is response code gotten after succesfully incrementing quantity of a product
+            case 202:
+                //show an alert telling the user that a product quantity has been incremented
+                document.querySelector(".quantity").style.display = "block";
+
+                //dismiss the alert after 2 seconds
+                setTimeout(()=>{
+                    document.querySelector(".quantity").style.display = "none";
+                }, 2000)
+                //clear the input
+                this.input.value = "";
+                break;
+
+                //this is response code gotten if a barcode doesnt exist in the db
+            case 404:
+                //set the barcode input in form with the scanned barcode
+                document.querySelector("#unique").value = this.input.value;
+                //show the form
+                this.btn.click()
+                break;
+
+                //this is response code gotten after a server error has occured
+            case 500:
+                console.log(response.status);
+                console.log(response.body);
+                break;
         }
+
+    }
+
+    showAlert(classname){
+        
     }
 }
 
