@@ -3,4 +3,4 @@
 define("HOST", "localhost");
 define("USERNAME", "root");
 define("PASSWORD", "");
-define("DBNAME", "mutall_pos");
+define("DBNAME", "chicjoint_pos");
