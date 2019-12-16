@@ -5,18 +5,23 @@ new BarcodeController;
 class BarcodeController{
     public $db;
     public $barcode;
-
+    public $data;
+    
     public function __construct()
     {
         $this->db = new Database;
         if (sizeof($_POST)>0) {
-            //insert new record
-            $this->insertNewBarcode();
+            if(isset($_POST['type'])){
+                $this->update_quantity();
+            }else{
+                //insert new record
+                $this->insertNewBarcode();
+            }
         }else{
             //scan a barcode
             $postData = file_get_contents('php://input');
-            $decodedData = json_decode($postData);
-            $this->barcode = $decodedData->barcode;
+            $this->data = json_decode($postData);
+            $this->barcode = $this->data->barcode;
             $this->checkBarcodeInDb();
         }
     }
@@ -30,8 +35,8 @@ class BarcodeController{
             http_response_code(404);
             return;
         }elseif($result->rowCount() > 0){
-            $this->incrementCount();
-            http_response_code(202);
+                $this->incrementCount();
+                http_response_code(202);
             return;
         }else{
             http_response_code(500);
@@ -46,9 +51,19 @@ class BarcodeController{
         $quantity ++;
         $update = "UPDATE product SET quantity = $quantity WHERE barcode = '$this->barcode'";
         $this->db->exec($update);
+       
     }
-
-    
+    function update_quantity(){
+        $barcode = $_POST['scanned'];
+        $sql = "select quantity from product where barcode = '$barcode'";
+        $result = $this->db->query ($sql);
+        $quantity = $result-> fetchobject()->quantity;
+        $quantity += $_POST['quantity'];
+        $update = "update product set quantity = $quantity where barcode = '$barcode'";
+        $this->db->exec($update);
+        http_response_code(202);
+       }
+            
     function insertNewBarcode(){
         $product_name = $_POST['name'];
         $this->barcode = $_POST['unique'];
