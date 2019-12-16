@@ -19,7 +19,19 @@ class BarCode {
 
         //get the form which is used to submit
         this.form = document.querySelector("#form");
-
+        
+        //get the form which is used to submit
+        this.quantity_form = document.querySelector("#quantity-form");
+        
+        //get th quantity modal
+        this.quantity_modal = document.querySelector("#quantity-modal");
+        
+        //get the scanned input
+        this.scanned = document.querySelector("#scanned");
+        
+        //get the check box
+        this.checkbox = document.querySelector("#check");
+        console.log(this.checkbox.checked);
     }
 
     setListeners() {
@@ -58,17 +70,35 @@ class BarCode {
         }
 
         //set an on change whenever the input changes
-        this.input.onchange = (e) => this.sendToDb(JSON.stringify({
-            barcode: e.target.value
-        }))
+        this.input.onchange = (e) => {
+            if (this.checkbox.checked) {
+                this.scanned.value = this.input.value;
+                this.quantity_modal.style.display = "block";
+            } else {
+
+                this.sendToDb(JSON.stringify({
+                    barcode: e.target.value
+
+                })
+
+                        )
+            }
+        };
 
         //add an onsubmit to the form 
         this.form.onsubmit = (e) => {
             e.preventDefault();
             this.sendToDb(new FormData(this.form));
         }
+        
+         //add an onsubmit to the form 
+        this.quantity_form.onsubmit = (e) => {
+            e.preventDefault();
+            const formData = new FormData(this.quantity_form);
+            formData.append("type", "update");
+            this.sendToDb(new FormData(this.form));
+        }
     }
-
 
     async sendToDb(data) {
         var response = await fetch("insert.php", {
@@ -83,10 +113,10 @@ class BarCode {
                 document.querySelector(".add-product").style.display = "block";
 
                 //dismiss the alert after 2 seconds
-                setTimeout(()=>{
+                setTimeout(() => {
                     document.querySelector(".add-product").style.display = "none";
                 }, 2000)
-                
+
                 //remove the entrance animation
                 this.modal.classList.remove("zoomIn")
                 //add a close animation
@@ -104,7 +134,7 @@ class BarCode {
                 document.querySelector(".quantity").style.display = "block";
 
                 //dismiss the alert after 2 seconds
-                setTimeout(()=>{
+                setTimeout(() => {
                     document.querySelector(".quantity").style.display = "none";
                 }, 2000)
                 //clear the input
@@ -128,8 +158,8 @@ class BarCode {
 
     }
 
-    showAlert(classname){
-        
+    showAlert(classname) {
+
     }
 }
 
