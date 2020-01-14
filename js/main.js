@@ -28,6 +28,7 @@ class BarCode {
         
         //get the scanned input
         this.scanned = document.querySelector("#scanned");
+        this.stock = document.querySelector("#stock");
         
         //get the check box
         this.checkbox = document.querySelector("#check");
@@ -59,13 +60,13 @@ class BarCode {
 
         // When the user clicks anywhere outside of the modal, close it
         window.onclick = (event) => {
-            if (event.target == this.modal) {
+            if (event.target == this.modal || event.target == this.quantity_modal) {
                 //remove zoom in animation
-                this.modal.classList.remove("zoomIn");
+                event.target.classList.remove("zoomIn");
                 //add zoomout animation
-                this.modal.className += " zoomOut";
+                event.target.className += " zoomOut";
 
-                this.modal.style.display = "none";
+                event.target.style.display = "none";
             }
         }
 
@@ -88,15 +89,18 @@ class BarCode {
         //add an onsubmit to the form 
         this.form.onsubmit = (e) => {
             e.preventDefault();
-            this.sendToDb(new FormData(this.form));
+            const f = new FormData(this.form);
+            console.log(f)
+            this.sendToDb(f);
         }
         
          //add an onsubmit to the form 
         this.quantity_form.onsubmit = (e) => {
             e.preventDefault();
-            const formData = new FormData(this.quantity_form);
-            formData.append("type", "update");
-            this.sendToDb(new FormData(this.form));
+            this.sendToDb(JSON.stringify({
+                barcode: this.scanned.value,
+                stock: this.stock.value
+            }));
         }
     }
 
