@@ -5,15 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="main.css">
-    <link rel="stylesheet" href="animate.css" />
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/animate.css" />
     <link href="https://fonts.googleapis.com/css?family=Sulphur+Point&display=swap" rel="stylesheet">
     <title>Point Of Sale</title>
 
 </head>
 
 <body>
-    <div class="container">
+    <div class="wrapper-barcode">
         <div class="add-product success-alert animated slideInDown">
             <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
             NEW PRODUCT ADDED
@@ -92,7 +92,7 @@
             </form>
         </div>
     </div>
-    <script src="main.js"></script>
+    <script src="../scripts/main.js"></script>
 </body>
 
 </html>
