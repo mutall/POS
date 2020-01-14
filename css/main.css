@@ -171,6 +171,14 @@ h3{
     text-align: center;
     padding: 0 10px;
   }
+  
+  #form input[type = number]{
+    border: 1px solid #F4511E;
+    border-radius: 25px;
+    font-size: 15px;
+    text-align: center;
+    padding: 0 10px;
+  }
 
   #form input[type =text]:focus{
     border: 1px solid #4CAF50;
