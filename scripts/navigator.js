@@ -18,17 +18,39 @@ buttons.forEach(btn => {
     }
 })
 
-const showStock = async (identifier) =>{
-    const response = await fetch("lib/stock.php", {
-        method: 'POST',
-        body: JSON.stringify({identifier})
-    });
-    
-    data = await response.json();
+const showStock = async () =>{
+    const response = await fetch("lib/stock.php");
+    const data = await response.json();
     buildTable(data)
+    
+    
+    // buildTable(data)
 
 }
 
 const buildTable = (data)=>{
     //build the table  to print
+    const tbody = document.querySelector("#table-body")
+    
+    
+    data.forEach(item => {
+        let tr = document.createElement("tr");
+        
+        for(const[key, value] of Object.entries(item)){
+            let myTd = document.createElement('td');
+            myTd.innerHTML = value
+            tr.appendChild(myTd)
+        }
+        
+        tbody.appendChild(tr)
+
+    })
+    
+
+    showTable()
+}
+
+const showTable = () => {
+    document.querySelector(".active").classList.remove("active");
+    document.querySelector("#content-table").classList.add("active")
 }
