@@ -9,10 +9,10 @@ require_once 'config.php';
    * Return rows and results
    */
   class Database extends PDO{
-    private $host = HOST;
-    private $user = USERNAME;
-    private $pass = PASSWORD;
-    private $dbname = DBNAME;
+    private $host = DB_HOST;
+    private $user = DB_USER;
+    private $pass = DB_PASSWORD;
+    private $dbname = DB_NAME;
     
     private $error;
 
