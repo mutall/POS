@@ -1,6 +1,6 @@
 <?php
 
 define("HOST", "localhost");
-define("USERNAME", "root");
-define("PASSWORD", "");
-define("DBNAME", "pos");
+define("USERNAME", "mutallde");
+define("PASSWORD", "mutalldatamanagers");
+define("DBNAME", "mutallde_pos");
