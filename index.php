@@ -24,12 +24,35 @@
         </div>
 
         <section id="stock1" class="sect">
-            <button class="big-button" onclick="showStock(3)">STORE STOCK</button>
-            <button class="big-button" onclick="showStock(1)">UPPER CHICJOINT COUNTER</button>
-            <button class="big-button" onclick="showStock(2)">LOWER CHICJOINT COUNTER</button>
+            <button class="big-button" target="content-table">STORE STOCK</button>
+            <button class="big-button" onclick="showStock()">UPPER CHICJOINT COUNTER</button>
+            <button class="big-button" target="content-table">LOWER CHICJOINT COUNTER</button>
         </section>
 
-        <section id="counter-chooser" class="sect">
+        <section id="content-table" class="sect">
+            <h3 id="table-header"></h3>
+            <button class="btn btn-primary" onclick="window.print()">PRINT TABLE</button>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th colspan="2" id="staff">STAFF: Emmah</th>
+                        <th colspan="2" id="date">DATE: 12/12/2019</th>
+                    </tr>
+                    <tr>
+                        <th scope="col">Product</th>
+                        <th scope="col">Opening Stock</th>
+                        <th scope="col">Added Stock</th>
+                        <th scope="col">Total Stock</th>
+                        <th scope="col">Closing Stock</th>
+                        <th scope="col">Sales</th>
+                        <th scope="col">Selling Price</th>
+                        <th scope="col">Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    
+                </tbody>
+            </table>
             
         </section>
     </div>
