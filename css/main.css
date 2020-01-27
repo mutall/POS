@@ -225,3 +225,12 @@ form {
   outline: none;
 
 }
+
+/* Style the table elements */
+table, th, td{
+  border: 1px solid #fefefe;
+}
+
+.staff-date> *{
+  border: none;
+}
