@@ -20,6 +20,10 @@
                 <button class="stock big-button" target="stock1">
                     STOCK
                 </button>
+
+                <button class="stock big-button" target="book-keeping">
+                    BOOK KEEPING
+                </button>
             </section>
         </div>
 
@@ -29,14 +33,43 @@
             <button class="big-button" target="content-table">LOWER CHICJOINT COUNTER</button>
         </section>
 
+        <section id="book-keeping" class="sect">
+            <button class="big-button" onclick="openingStock()">Opening Stock</button>
+        </section>
+
+
+        <section id="stock-entry" class="sect">
+            <div class="card p-5 d-flext justify-content-center">
+                <h5 class="card-header text-center" id="product-name">TUSKER LAGER</h5>
+                <div class="card-body">
+                    <p class="card-text">Closing Stock: <span id="quantity">170</span></p>
+                    <div class="form-inline">
+                        <input type="number" class="form-control mr-3" id="stock" placeholder="Opening stock">
+                        <button class="btn btn-primary">submit</button>
+                    </div>
+                </div>
+
+            </div>
+            <div class="mt-5">
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <th>PRODUCT NAME</th>
+                        <th>QUANTITY</th>
+                    </thead>
+                    <tbody id="temp-body">
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
         <section id="content-table" class="sect">
             <h3 id="table-header"></h3>
             <button class="btn btn-primary" onclick="window.print()">PRINT TABLE</button>
             <table class="table">
                 <thead>
-                    <tr>
-                        <th colspan="2" id="staff">STAFF: Emmah</th>
-                        <th colspan="2" id="date">DATE: 12/12/2019</th>
+                    <tr class="staff-date">
+                        <th colspan="4" id="staff">STAFF: Emmah</th>
+                        <th colspan="4" id="date" style="text-align: right;">DATE: 01/01/2020</th>
                     </tr>
                     <tr>
                         <th scope="col">Product</th>
@@ -50,13 +83,15 @@
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    
+
                 </tbody>
             </table>
-            
+
         </section>
     </div>
 </body>
 <script src="./scripts/navigator.js"></script>
 
 </html>
+
+<!-- c -->
