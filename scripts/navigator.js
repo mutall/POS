@@ -54,3 +54,14 @@ const showTable = () => {
     document.querySelector(".active").classList.remove("active");
     document.querySelector("#content-table").classList.add("active")
 }
+
+const openingStock = async() => {
+    const response = await fetch("lib/closing_stock.php")
+    const data = await response.json()
+    console.log(data);
+
+    //get access to LS
+    const localStorage = window.localStorage;
+    localStorage.setItem('data', JSON.stringify(data))
+
+}
