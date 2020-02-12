@@ -1,0 +1,16 @@
+body{
+  /* overflow-y: hidden; */
+}
+section:not(.active){
+  display: none;
+}
+
+.pop-header{
+  display: none;
+  position: fixed !important;
+  top: 0;
+  z-index: 3;
+}
+.card-table{
+  overflow-y: scroll;
+}
