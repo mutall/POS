@@ -1,5 +1,7 @@
-
 <?php
+// since our system will be making multiple calls to the db a single global instance of a db is needed
+// we use the singleton pattern to access the database 
+
 require_once 'config.php';
   /*
    * PDO Database Class
@@ -8,15 +10,18 @@ require_once 'config.php';
    * Bind values
    * Return rows and results
    */
-  class Database extends PDO{
+  class Database{
     private $host = DB_HOST;
     private $user = DB_USER;
     private $pass = DB_PASSWORD;
     private $dbname = DB_NAME;
+    public $error;
     
-    private $error;
-
-    public function __construct(){
+    //save the instance of a db
+    private static $instance = null;
+    
+    
+    private function __construct(){
       // Set DSN
       $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname;
       $options = array(
@@ -26,10 +31,18 @@ require_once 'config.php';
 
       // Create PDO instance
       try{
-        parent::__construct($dsn, $this->user, $this->pass, $options);
+        self::$instance = new PDO($dsn, $this->user, $this->pass, $options);
       } catch(PDOException $e){
         $this->error = $e->getMessage();
         die($this->error);
       }
+    }
+
+    public static function getInstance(){
+      if(self::$instance == null){
+        new Database();
+      }
+
+      return self::$instance;
     }
   }
