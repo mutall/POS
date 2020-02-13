@@ -14,3 +14,9 @@ section:not(.active){
 .card-table{
   overflow-y: scroll;
 }
+#pombe-image {
+  max-height: 250px;
+}
+.time{
+  color: #fefefe;
+}
