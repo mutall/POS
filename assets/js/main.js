@@ -1,5 +1,3 @@
-
-
 //create the main entrypoint for our system
 const POS = (() => {
 
@@ -55,7 +53,7 @@ const POS = (() => {
                             icon: "success",
                         });
                         setTimeout(() => {
-                            window.location.href = "http://localhost/POS/"
+                            window.location.href = "../index.php"
                         }, 2000)
                     } else {
                         swal("Logout cancelled");
@@ -89,6 +87,7 @@ class Storage {
             return JSON.parse(this.storage.getItem(id))
         } else {
             this.saveToLs(id, [])
+            return this.getFromLs(id)
         }
     }
 
@@ -97,11 +96,14 @@ class Storage {
         const new_data = data.filter(value => value.primary !== id)
         this.saveToLs(key, new_data)
     }
+    static delete(key){
+        this.storage.removeItem(key)
+    }
 }
 
 //create a class or fetching data from server
 class Server {
-    static url = 'http://localhost/POS/lib/chicjoint.php'
+    static url = '../lib/chicjoint.php'
     static async get(callback) {
         const response = await fetch(this.url)
         if (await response.status === 200) {
@@ -196,49 +198,55 @@ class Stock extends Section {
                 station: selectedStation
             }
             Server.post(postBody, (data) => {
+                const dataArray = []
                 // this.tbody.innerHTML = ""
                 data.table.forEach(item => {
                     for ([key, value] of Object.entries(item)) {
                         if (value == null) item[key] = 0
                     }
 
-                    item.totalStock = parseInt(item.stock) + parseInt(item.added)
-                    item.closingStock = parseInt(item.totalStock) - parseInt(item.sale)
-                    item.totalAmount = parseInt(item.sale) * parseInt(item.amount)
+                    item.totalStock = parseInt(item.opening) + parseInt(item.added)
+                    item.closingStock = parseInt(item.totalStock) - parseInt(item.sales)
+                    item.totalAmount = parseInt(item.sales) * parseInt(item.price)
 
-                    let row = document.createElement('tr')
-                    let td1 = document.createElement('td')
-                    let td2 = document.createElement('td')
-                    let td3 = document.createElement('td')
-                    let td4 = document.createElement('td')
-                    let td5 = document.createElement('td')
-                    let td6 = document.createElement('td')
-                    let td7 = document.createElement('td')
-                    let td8 = document.createElement('td')
-
-                    td1.innerText = item.name
-                    td2.innerText = item.stock
-                    td3.innerText = item.added
-                    td4.innerText = item.totalStock
-                    td5.innerText = item.closingStock
-                    td6.innerText = item.sale
-                    td7.innerText = item.amount
-                    td8.innerText = item.totalAmount
-
-                    row.appendChild(td1)
-                    row.appendChild(td2)
-                    row.appendChild(td3)
-                    row.appendChild(td4)
-                    row.appendChild(td5)
-                    row.appendChild(td6)
-                    row.appendChild(td7)
-                    row.appendChild(td8)
-
-
-                    this.tbody.appendChild(row)
-                    // console.log(item);
-
+                    dataArray.push(item)
                 })
+                console.log(dataArray);
+
+                $(document).ready(function () {
+                    $('#stock-table').DataTable({
+                        scrollY: 400,
+                        retrieve: true,
+                        destroy: true,
+                        "data": dataArray,
+                        "columns": [{
+                                "data": "description"
+                            },
+                            {
+                                "data": "opening"
+                            },
+                            {
+                                "data": "added"
+                            },
+                            {
+                                "data": "totalStock"
+                            },
+                            {
+                                "data": "closingStock"
+                            },
+                            {
+                                "data": "sales"
+                            },
+                            {
+                                "data": "price"
+                            },
+                            {
+                                "data": "totalAmount"
+                            },
+                        ]
+                    });
+
+                });
 
             })
         })
@@ -250,21 +258,41 @@ class Stock extends Section {
 class Bookkeeping extends Section {
     constructor() {
         super()
-        this.data = Storage.getFromLs('products');
-        this.addProductItem()
-
+        this.deleteLsData()
+        this.fetchClosing()
+        
+    
     }
 
+
+    fetchClosing() {
+        const postData = {
+            class: "ChicJoint",
+            method: "getClosingStock",
+            state: true
+        }
+        Server.post(postData, (data) => {
+            console.log(data);
+            Storage.saveToLs('data', data.details)
+            this.data = data.details
+            this.addProductItem()
+            this.updateVals()
+
+        })
+    }
     loadElements() {
         this.productName = document.querySelector("#product-name")
         this.stockQuantity = document.querySelector("#quantity")
-        // this.remainder = document.querySelector("")
+        this.remainder = document.querySelector("#remainder")
         this.submit = document.querySelector("#btn-submit")
         // this.back = document.querySelector("")
         this.opening = document.querySelector("#stockInput")
         this.table = document.querySelector("#temp-body")
         this.image = document.querySelector("#pombe-image")
         this.form = document.querySelector('#submit-drink')
+        this.date = document.querySelector('#date')
+        this.upload = document.querySelector('#upload')
+        this.clear = document.querySelector('#clear')
     }
 
     addListeners() {
@@ -295,23 +323,87 @@ class Bookkeeping extends Section {
             this.data.shift()
             this.addProductItem()
             Storage.saveToLs('data', this.data)
+            this.updateVals()
         })
+        this.upload.addEventListener('click', ()=>{
+            const postData = {
+                class: "ChicJoint",
+                method: "commitTable",
+                state: false,
+                data: Storage.getFromLs('table')
+            }
+            Server.post(postData, (data)=>{
+                console.log(data);
+                
+                swal({
+                    title: "NICE!",
+                    text: "Successfully uploaded",
+                    icon: "success"
+                });
+                Storage.delete("table")
+                this.updateVals()
+                this.clearTable()
+                
+            })
+        })
+        this.clear.addEventListener('click', ()=>{
+            swal({
+                title: "DELETE TABLE DATA?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((del) => {
+                if (del) {
+                    Storage.delete('table')
+                    this.updateVals()
+                    this.clearTable()
+                    swal("Table deleted", {
+                        icon: "success",
+                    });
+                } else {
+                    swal("Ok. Continue 😀");
+                }
+            });
+        })
+
+    }
+    updateVals() {
+        const data = Storage.getFromLs('data')
+        this.remainder.innerText = `${data.length} Items remaining`
+        
+        const table = Storage.getFromLs('table')
+        if(table.length > 0 ){
+            this.upload.style.display = 'block'
+            this.clear.style.display = 'block'
+        }else{
+            this.upload.style.display = 'none'
+            this.clear.style.display = 'none'
+        }
     }
 
+    deleteLsData(){
+        Storage.delete('data')
+        Storage.delete('table')
+    }
     addProductItem() {
         const product = this.data[0];
         console.log(product);
         this.productName.innerHTML = product.name
         this.stockQuantity.innerHTML = product.quantity
         this.opening.value = ""
+        this.date.innerText = product.date
         this.image.setAttribute('src', `../assets/images/${product.image}`)
         this.primary = product.primary;
 
 
     }
+    clearTable(){
+        this.table.innerHTML =""
+    }
 }
 
-class Setting extends Section{}
+class Setting extends Section {}
 
 
 //start the application 
