@@ -78,7 +78,7 @@
                 icon: "success"
             });
             setTimeout(() => {
-                window.location.href = "http://localhost/POS/pages/dashboard.php"
+                window.location.href = "pages/dashboard.php"
             }, 2000)
 
         }
