@@ -96,10 +96,10 @@
             <li class="active" target="dashboard"><a href="#" class="nav-link"><i class="fas fa-fire"></i><span>Dashboard</span></a></li>
             <li class="menu-header">Main Menu</li>
             <li target="stock">
-              <a href="#" class="nav-link"><i class=" fas fa-columns"></i> <span>STOCK</span></a>
+              <a href="#" class="nav-link"><i class=" fas fa-columns"></i> <span>Stock</span></a>
             </li>
-            <li target="bookkeeping"><a class="nav-link" href="#"><i class="far fa-square"></i> <span>BOOK KEEPING</span></a></li>
-            <li target="setting"><a class="nav-link" href="#"><i class="fas fa-cog"></i><span>SETTING</span></a></li>
+            <li target="bookkeeping"><a class="nav-link" href="#"><i class="far fa-square"></i> <span>Book Keeping</span></a></li>
+            <li target="setting"><a class="nav-link" href="#"><i class="fas fa-cog"></i><span>Setting</span></a></li>
             <li onclick="test()"><a class="nav-link" href="#"><i class="fas fa-pencil-ruler"></i> <span>Credits</span></a></li>
           </ul>
         </aside>
@@ -324,8 +324,8 @@
                 <h4>RESULTS</h4>
               </div>
               <div class="card-body">
-                <table  id="stock-table">
-                  <thead>
+                <table class="table table-striped table-bordered" id="stock-table">
+                  <thead class="thead-dark">
                     <tr>
                       <th scope="col">Product</th>
                       <th scope="col">Opening Stock</th>
@@ -346,8 +346,14 @@
           </div>
         </section>
         <section class="section" id="bookkeeping">
-          <div class="section-header">
+          <div class="section-header d-flex justify-content-between">
             <h1>book keeping</h1>
+
+            <div class="d-flex justify-content-around">
+              <span id="remainder" class="mr-5">96 remaining</span>
+              <button class="btn btn-primary mr-2" id="upload">UPLOAD TABLE</button>
+              <button class="btn btn-warning" id="clear">CLEAR TABLE</button>
+            </div>
           </div>
 
           <div class="section-body">
@@ -379,8 +385,8 @@
 
             </div>
             <div class="mt-5">
-              <table id="book-table">
-                <thead>
+              <table class="table table-bordered" id="book-table">
+                <thead class="thead-dark">
                   <th>PRODUCT NAME</th>
                   <th>QUANTITY</th>
                 </thead>
@@ -663,15 +669,6 @@
         },
       }
     });
-
-
-    $(document).ready( function () {
-    $('#stock-table').DataTable({
-      scrollY: 400,
-      paging: false
-    });
-    $('#book-table').DataTable();
-} );
   </script>
 
   <!-- Page Specific JS File -->
