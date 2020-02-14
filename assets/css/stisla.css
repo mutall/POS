@@ -1943,8 +1943,8 @@ body, html {
   min-height: 100%; }
 
 body {
-  background-color: #f4f6f9;
-  font-size: 14px;
+  background-color: #CFD8DC;
+  font-size: 16px;
   font-weight: 400;
   font-family: "Nunito", "Segoe UI", arial;
   color: #6c757d; }
@@ -2779,6 +2779,7 @@ body.layout-3 .main-footer {
       .main-sidebar .sidebar-menu li.menu-header:not(:first-child) {
         margin-top: 10px; }
     .main-sidebar .sidebar-menu li a {
+      font-weight: 600;
       position: relative;
       display: flex;
       align-items: center;
@@ -2786,7 +2787,7 @@ body.layout-3 .main-footer {
       padding: 0 20px;
       width: 100%;
       letter-spacing: .3px;
-      color: #78828a;
+      color: #2a2a2a;
       text-decoration: none; }
       .main-sidebar .sidebar-menu li a .badge {
         float: right;
