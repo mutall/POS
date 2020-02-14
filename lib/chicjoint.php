@@ -59,6 +59,9 @@ class ChicJoint
         echo json_encode($arr);
     }
 
+    public function commitTable(){
+        echo json_encode("hello");
+    }
     
     //get stok of a counter for  particular day
     static public function getStock()
@@ -72,11 +75,11 @@ class ChicJoint
         $stock = "SELECT * FROM stock WHERE date = '$data->date' AND location = $station";
 
         $sql = "SELECT 
-                    product.name, 
-                    product.amount, 
-                    sale.quantity as sale, 
-                    stock.quantity as stock, 
-                    stock.added,
+                    product.name as description, 
+                    product.amount as price, 
+                    sale.quantity as sales, 
+                    stock.quantity as opening, 
+                    stock.added as added,
                     stock.staff  
                 FROM 
                     product 
@@ -89,12 +92,6 @@ class ChicJoint
         $arr['table'] = $result->fetchAll(PDO::FETCH_OBJ);
 
         echo json_encode($arr);
-    }
-
-    static public function test(){
-        $sql = "SELECT * FROM product";
-        $result = Database::getInstance()->query($sql);
-        echo json_encode($result->fetchAll());
     }
 
     /**
@@ -120,11 +117,12 @@ class ChicJoint
 
         // create an sql querry to get product
         $product_details = "SELECT 
-                       product.product, stock.date, stock.quantity
+                       product.name, stock.date, stock.quantity, image.name as image
                     FROM 
                         product 
                             INNER JOIN stock ON product.product = stock.product
                             INNER JOIN ($max_date) as max_date ON product.product = max_date.product
+                            INNER JOIN image ON product.product = image.product
                     WHERE 
                         stock.date = max_date.max";
 
