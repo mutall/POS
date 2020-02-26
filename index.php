@@ -30,34 +30,40 @@
                             </div>
 
                             <div class="card-body">
-                                    <div class="form-group">
-                                        <label for="email">Username</label>
-                                        <input id="email" type="email" class="form-control" name="email" tabindex="1" autofocus>
-                                        <div class="invalid-feedback">
-                                            Please fill in your username
+                                <div class="form-group">
+                                    <label for="email">Username</label>
+                                    <input id="email" type="email" class="form-control" name="email" tabindex="1" autofocus>
+                                    <div class="invalid-feedback">
+                                        Please fill in your username
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="station">Enter Counter</label>
+                                    <select class="form-control" id="station">
+                                        <option>Upper Chic</option>
+                                        <option>Lower Chic</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <div class="d-block">
+                                        <label for="password" class="control-label">Password</label>
+                                        <div class="float-right">
+                                            <a href="pages/forgot-password.php" class="text-small">
+                                                Forgot Password?
+                                            </a>
                                         </div>
                                     </div>
+                                    <input id="password" type="password" class="form-control" name="password" tabindex="2">
+                                    <div class="invalid-feedback">
+                                        please fill in your password
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary btn-lg btn-block" onclick="login()" tabindex="4">
+                                        Login
+                                    </button>
+                                </div>
 
-                                    <div class="form-group">
-                                        <div class="d-block">
-                                            <label for="password" class="control-label">Password</label>
-                                            <div class="float-right">
-                                                <a href="pages/forgot-password.php" class="text-small">
-                                                    Forgot Password?
-                                                </a>
-                                            </div>
-                                        </div>
-                                        <input id="password" type="password" class="form-control" name="password" tabindex="2">
-                                        <div class="invalid-feedback">
-                                            please fill in your password
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <button class="btn btn-primary btn-lg btn-block" onclick="login()" tabindex="4">
-                                            Login
-                                        </button>
-                                    </div>
-                                
                             </div>
                         </div>
 
@@ -69,7 +75,7 @@
             </div>
         </section>
     </div>
-    <script src="assets/js/sweetalert.min.js"></script>
+    <script src="assets/js/lib/sweetalert.min.js"></script>
     <script>
         const login = () => {
             swal({

@@ -20,5 +20,5 @@ switch ($_SERVER['HTTP_HOST']) {
         define('DB_HOST', "localhost");
         define('DB_USER', "root");
         define('DB_PASSWORD', "");
-        define('DB_NAME', "pos");
+        define('DB_NAME', "mutall_pos");
 }

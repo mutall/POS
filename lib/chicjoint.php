@@ -1,5 +1,10 @@
 <?php
-require_once("database.php");
+require_once 'models/product.php';
+require_once 'models/staff.php';
+require_once 'models/station.php';
+
+
+
 
 $data = json_decode(file_get_contents('php://input'));
 
@@ -30,7 +35,21 @@ function run($class, $method, $static = false){
 
 class ChicJoint 
 {
-    
+    public $stmt; 
+    public $stmt2; 
+    public function __construct()
+    {
+        $sql = "INSERT INTO 
+                    `stock`(`date`, `quantity`, `location`, `product`, `staff`) 
+                VALUES(:date, :quantity, :location, (SELECT product.product FROM product WHERE name = :name), :staff) ";
+        
+        $sale = "INSERT INTO 
+                    `sale`(`date`, `quantity`, `product`, `staff`) 
+                VALUES(:date, :quantity,  (SELECT product.product FROM product WHERE name = :name), :staff) ";
+
+        $this->stmt = Database::getInstance()->prepare($sql);
+        $this->stmt2 = Database::getInstance()->prepare($sale);
+    }
     /**
      * This method will be called before the system initialises.
         why?? 
@@ -60,7 +79,24 @@ class ChicJoint
     }
 
     public function commitTable(){
-        echo json_encode("hello");
+        global $data;
+        
+        foreach($data->data as $item):
+            $this->stmt->bindParam(':date', $item->date);
+            $this->stmt->bindParam(':quantity', $item->quantity);
+            $this->stmt->bindParam(':location', $item->station);
+            $this->stmt->bindParam(':name', $item->name);
+            $this->stmt->bindParam(':staff', $item->staff);
+            
+            $this->stmt2->bindParam(':date', $item->date);
+            $this->stmt2->bindParam(':quantity', $item->sale);
+            $this->stmt2->bindParam(':name', $item->name);
+            $this->stmt2->bindParam(':staff', $item->staff);
+            $this->stmt->execute();
+            $this->stmt2->execute();
+        endforeach;
+        echo json_encode(["status"=>"okay"]);
+        
     }
     
     //get stok of a counter for  particular day

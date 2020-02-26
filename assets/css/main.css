@@ -17,6 +17,23 @@ section:not(.active){
 #pombe-image {
   max-height: 250px;
 }
+
+#Pimage {
+  max-height: 250px;
+}
 .time{
   color: #fefefe;
+}
+.clickable-card{
+  box-shadow: 5px 5px #B0BEC5 !important;
+  z-index: 5;
+  transition: 1s ease-in-out;
+}
+
+.clickable-card:hover{
+  cursor: pointer;
+  transform: scale(1.1);
+}
+#product-table_wrapper{
+  width: 30%;;
 }

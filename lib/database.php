@@ -11,14 +11,14 @@ require_once 'config.php';
    * Return rows and results
    */
   class Database{
-    private $host = DB_HOST;
-    private $user = DB_USER;
-    private $pass = DB_PASSWORD;
-    private $dbname = DB_NAME;
-    public $error;
+    private string $host = DB_HOST;
+    private string $user = DB_USER;
+    private string $pass = DB_PASSWORD;
+    private string $dbname = DB_NAME;
+    public string $error;
     
     //save the instance of a db
-    private static $instance = null;
+    private static ?PDO $instance;
     
     
     private function __construct(){
@@ -38,7 +38,7 @@ require_once 'config.php';
       }
     }
 
-    public static function getInstance(){
+    public static function getInstance():PDO{
       if(self::$instance == null){
         new Database();
       }

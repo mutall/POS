@@ -53,7 +53,7 @@
             <li><a href="#" data-toggle="search" class="nav-link nav-link-lg d-sm-none"><i class="fas fa-search"></i></a></li>
           </ul>
           <div class="search-element">
-            <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="250">
+            <input id="search-box" class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="250">
             <button class="btn" type="submit"><i class="fas fa-search"></i></button>
             <div class="search-backdrop"></div>
           </div>
@@ -414,31 +414,30 @@
 
             <div class="row">
               <div class="col-lg-6">
-                <div class="card card-large-icons">
+                <div class="card card-large-icons" target="product">
                   <div class="card-icon bg-primary text-white">
                     <i class="fas fa-beer"></i>
                   </div>
                   <div class="card-body">
                     <h4>PRODUCTS</h4>
-                    <p>General product settings such as, changing product names, changing product prices, changing product images and so on.</p>
-                    <a href="#" class="card-cta">Change Setting <i class="fas fa-chevron-right"></i></a>
+                    <p>General product settings such as, product names, barcode changes.</p>
                   </div>
                 </div>
               </div>
               <div class="col-lg-6">
-                <div class="card card-large-icons">
+                <div class="card card-large-icons" target="email">
                   <div class="card-icon bg-primary text-white">
                     <i class="fas fa-envelope"></i>
                   </div>
                   <div class="card-body">
                     <h4>Email</h4>
                     <p>Email SMTP settings, notifications and others related to email.</p>
-                    <a href="#" class="card-cta">Change Setting <i class="fas fa-chevron-right"></i></a>
+                    <p class="bg-danger">Not Implemented</p>
                   </div>
                 </div>
               </div>
-              <div class="col-lg-6">
-                <div class="card card-large-icons">
+              <!-- <div class="col-lg-6">
+                <div class="card card-large-icons" target="system">
                   <div class="card-icon bg-primary text-white">
                     <i class="fas fa-power-off"></i>
                   </div>
@@ -448,32 +447,117 @@
                     <a href="#" class="card-cta">Change Setting <i class="fas fa-chevron-right"></i></a>
                   </div>
                 </div>
-              </div>
+              </div> -->
               <div class="col-lg-6">
-                <div class="card card-large-icons">
+                <div class="card card-large-icons" target="security">
                   <div class="card-icon bg-primary text-white">
                     <i class="fas fa-lock"></i>
                   </div>
                   <div class="card-body">
                     <h4>Security</h4>
                     <p>Security settings such as firewalls, server accounts and others.</p>
-                    <a href="features-setting-detail.html" class="card-cta">Change Setting <i class="fas fa-chevron-right"></i></a>
+                    <p class="bg-danger">Not Implemented</p>
                   </div>
                 </div>
               </div>
               <div class="col-lg-6">
-                <div class="card card-large-icons">
+                <div class="card card-large-icons" target="automation">
                   <div class="card-icon bg-primary text-white">
                     <i class="fas fa-stopwatch"></i>
                   </div>
                   <div class="card-body">
                     <h4>Automation</h4>
                     <p>Settings about automation such as cron job, backup automation and so on.</p>
-                    <a href="#" class="card-cta text-primary">Change Setting <i class="fas fa-chevron-right"></i></a>
+                    <p class="bg-danger">Not Implemented</p>
                   </div>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+        <section class="section" id="product">
+          <div class="section-header">
+            <h1>Product Settings</h1>
+            <div class="section-header-breadcrumb">
+              <div class="breadcrumb-item active"><a href="#">Dashboard</a></div>
+              <div class="breadcrumb-item active">Settings</div>
+              <div class="breadcrumb-item">Products</div>
+            </div>
+          </div>
+
+          <div class="section-body">
+            <h2 class="section-title">Overview</h2>
+            <p class="section-lead">
+              Adjust all settings about the Products.
+            </p>
+            <div class="d-flex flex-row justify-content-around">
+              <table class="col-sm-6 table-bordered mr-5 " id="product-table">
+                <thead>
+                  <th>name</th>
+                </thead class="thead-dark">
+                <tbody id="product-tbody"></tbody>
+              </table>
+              <div class="card card-large-icons d-flex justify-content-around">
+                <div class="product-image">
+                  <img src="../assets/images/balozi.jpg" id="Pimage" alt="balozi" srcset="">
+                </div>
+                <div class="card-body product-details d-flex flex-column">
+                  <form action="" class="form">
+                    <div class="form-group">
+                      <label for="Pname">Name</label>
+                      <input type="text" class="form-control form-control-sm" id="Pname">
+                    </div>
+                    <div class="form-group">
+                      <label for="Pbarcode">Barcode</label>
+                      <input type="text" class="form-control form-control-sm" id="Pbarcode">
+                    </div>
+                    <div class="form-group">
+                      <label for="Pprice">Price</label>
+                      <input type="text" class="form-control form-control-sm" id="Pprice">
+                    </div>
+                    <div class="form-group">
+                      <label for="exampleFormControlFile1">Change Image</label>
+                      <input type="file" class="form-control-file" id="exampleFormControlFile1">
+                    </div>
+                    <div class="form-group">
+                      <input type="submit" class="btn btn-primary" value="update">
+                      <input type="clear" class="btn btn-warning" value="clear">
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="section" id="resulttable">
+        <div class="section-header">
+            <h1>RESULTS</h1>
+            <div class="section-header-breadcrumb">
+              <div class="breadcrumb-item active"><a href="#">Dashboard</a></div>
+              <div class="breadcrumb-item active">Settings</div>
+              <div class="breadcrumb-item">Products</div>
+            </div>
+          </div>
+          <div class="section-body">
+          <table class="table table-striped table-bordered" id="result-book-table">
+                  <thead class="thead-dark">
+                    <tr>
+                      <th scope="col">Product</th>
+                      <th scope="col">Opening Stock</th>
+                      <th scope="col">Added Stock</th>
+                      <th scope="col">Total Stock</th>
+                      <th scope="col">Closing Stock</th>
+                      <th scope="col">Sales Stock</th>
+                      <th scope="col">Selling Price</th>
+                      <th scope="col">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody class="result-body">
+
+                  </tbody>
+                </table>
           </div>
         </section>
 
@@ -498,14 +582,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
   <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
-  <script src="../assets/js/stisla.js"></script>
-  <script src="../assets/js/iziToast.min.js"></script>
-  <script src="../assets/js/sweetalert.min.js"></script>
+  <script src="../assets/js/lib/stisla.js"></script>
+  <script src="../assets/js/lib/iziToast.min.js"></script>
+  <script src="../assets/js/lib/sweetalert.min.js"></script>
 
   <!-- JS Libraies -->
 
   <!-- Template JS File -->
-  <script src="../assets/js/scripts.js"></script>
+  <script src="../assets/js/lib/scripts.js"></script>
   <script src="../assets/js/main.js"></script>
   <script>
     var ctx = document.getElementById("myChart").getContext('2d');

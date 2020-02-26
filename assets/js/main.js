@@ -13,6 +13,7 @@ const POS = (() => {
             setTimeout('POS.updateLoggedInTime()', 60000)
         },
         start: () => {
+
             Storage.saveToLs('loggedIn', moment().format('hmmss'))
             POS.showClock()
             POS.updateLoggedInTime()
@@ -39,6 +40,8 @@ const POS = (() => {
                     })
                 }
             })
+
+            new Dashboard()
         },
         stop: () => {
             swal({
@@ -63,6 +66,22 @@ const POS = (() => {
     }
 })()
 
+
+//create my own exception object 
+class UserException {
+    constructor(message) {
+        this.message = message
+        this.name = 'UserException'
+
+        swal({
+            title: "Exception!!",
+            text: message,
+            icon: "warning",
+            dangerMode: true,
+        })
+    }
+
+}
 //create a util class containing utitlity methods
 class Utils {
     //function to convert a string to sentence case i.e foo->Foo bar->Bar 
@@ -96,7 +115,7 @@ class Storage {
         const new_data = data.filter(value => value.primary !== id)
         this.saveToLs(key, new_data)
     }
-    static delete(key){
+    static delete(key) {
         this.storage.removeItem(key)
     }
 }
@@ -134,24 +153,34 @@ class Section {
     constructor() {
         //get the id of the section
         this.id = this.constructor.name
+        this.section = document.querySelector(`#${this.id.toLowerCase()}`)
         this.init()
-        this.loadElements()
+        this.loadElements(this.section)
         this.addListeners()
-        console.log(typeof this.constructor.name);
+        this.search(document.querySelector("#search-box"))
     }
 
     init() {
         document.querySelector('section.active').classList.remove('active')
         document.querySelector(`#${this.id.toLowerCase()}`).classList.add('active')
+
     }
 
     loadElements() {
-        console.log('loading elements');
-
+        throw new UserException(`Must implement ${this.loadElements.name} in child classes`)
     }
     addListeners() {
-        console.log('attaching listeners');
+        throw new UserException(`Must implement ${this.addListeners.name} in child classes`)
 
+    }
+
+    search() {
+        throw new UserException(`Must implement ${this.search.name} in child classes"`)
+    }
+    static switch(target){
+        // document.querySelector('section.active').classList.remove('active')
+        // document.querySelector(`#${target}`).classList.add('active')
+        eval(`new ${target}()`)
     }
 }
 
@@ -160,9 +189,11 @@ class Dashboard extends Section {
         super()
     }
 
-    loadElements() {}
+    loadElements(section) {}
 
     addListeners() {}
+
+    search() {}
 }
 
 class Stock extends Section {
@@ -170,12 +201,12 @@ class Stock extends Section {
         super()
     }
 
-    loadElements() {
+    loadElements(section) {
         this.stations = Storage.getFromLs('station')
-        this.selectElement = document.querySelector('#stationInputState')
-        this.stationForm = document.querySelector('#station-form')
-        this.stockDate = document.querySelector('#stockDate')
-        this.tbody = document.querySelector('.result-body')
+        this.selectElement = section.querySelector('#stationInputState')
+        this.stationForm = section.querySelector('#station-form')
+        this.stockDate = section.querySelector('#stockDate')
+        this.tbody = section.querySelector('.result-body')
 
     }
 
@@ -253,6 +284,12 @@ class Stock extends Section {
 
     }
 
+    //implement search method
+    search(input) {
+        console.log(input);
+    }
+
+
 }
 
 class Bookkeeping extends Section {
@@ -260,39 +297,25 @@ class Bookkeeping extends Section {
         super()
         this.deleteLsData()
         this.fetchClosing()
-        
-    
+
+
     }
 
 
-    fetchClosing() {
-        const postData = {
-            class: "ChicJoint",
-            method: "getClosingStock",
-            state: true
-        }
-        Server.post(postData, (data) => {
-            console.log(data);
-            Storage.saveToLs('data', data.details)
-            this.data = data.details
-            this.addProductItem()
-            this.updateVals()
 
-        })
-    }
-    loadElements() {
-        this.productName = document.querySelector("#product-name")
-        this.stockQuantity = document.querySelector("#quantity")
-        this.remainder = document.querySelector("#remainder")
-        this.submit = document.querySelector("#btn-submit")
+    loadElements(section) {
+        this.productName = section.querySelector("#product-name")
+        this.stockQuantity = section.querySelector("#quantity")
+        this.remainder = section.querySelector("#remainder")
+        this.submit = section.querySelector("#btn-submit")
         // this.back = document.querySelector("")
-        this.opening = document.querySelector("#stockInput")
-        this.table = document.querySelector("#temp-body")
-        this.image = document.querySelector("#pombe-image")
-        this.form = document.querySelector('#submit-drink')
-        this.date = document.querySelector('#date')
-        this.upload = document.querySelector('#upload')
-        this.clear = document.querySelector('#clear')
+        this.opening = section.querySelector("#stockInput")
+        this.table = section.querySelector("#temp-body")
+        this.image = section.querySelector("#pombe-image")
+        this.form = section.querySelector('#submit-drink')
+        this.date = section.querySelector('#date')
+        this.upload = section.querySelector('#upload')
+        this.clear = section.querySelector('#clear')
     }
 
     addListeners() {
@@ -314,9 +337,11 @@ class Bookkeeping extends Section {
             tableLs.push({
                 name: this.productName.innerHTML,
                 quantity: this.opening.value,
-                staff: "",
-                station: "",
-                date: ""
+                staff: 1,
+                station: 1,
+                date: moment().format('YYYY/MM/DD'),
+                closing: this.stockQuantity.innerText,
+                sale: parseInt(this.opening.value) - parseInt(this.stockQuantity.innerText)
             })
             Storage.saveToLs('table', tableLs)
 
@@ -325,64 +350,108 @@ class Bookkeeping extends Section {
             Storage.saveToLs('data', this.data)
             this.updateVals()
         })
-        this.upload.addEventListener('click', ()=>{
+        this.upload.addEventListener('click', () => {
             const postData = {
                 class: "ChicJoint",
                 method: "commitTable",
                 state: false,
                 data: Storage.getFromLs('table')
             }
-            Server.post(postData, (data)=>{
+            Server.post(postData, (data) => {
                 console.log(data);
-                
+
                 swal({
                     title: "NICE!",
                     text: "Successfully uploaded",
                     icon: "success"
                 });
+
+                swal({
+                    title: "VIEW GENERATED TABLE?",
+                    icon: "info",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then((view) => {
+                    if (view) {
+                        const newData = {
+                            class: 'Chicjoint',
+                            method: 'getStock',
+                            state: true,
+                            date: moment().format('YYYY/MM/DD'),
+                            station: 1   
+                        }
+                        Server.post(newData, (data)=>{
+                            Storage.saveToLs('newdata', data.table)
+                            Section.switch('resulttable')
+                        })
+                        
+                    } else {
+                        swal("Ok. Continue 😀");
+                    }
+                });
+
                 Storage.delete("table")
                 this.updateVals()
                 this.clearTable()
-                
+
             })
         })
-        this.clear.addEventListener('click', ()=>{
+        this.clear.addEventListener('click', () => {
             swal({
-                title: "DELETE TABLE DATA?",
-                icon: "warning",
-                buttons: true,
-                dangerMode: true,
-            })
-            .then((del) => {
-                if (del) {
-                    Storage.delete('table')
-                    this.updateVals()
-                    this.clearTable()
-                    swal("Table deleted", {
-                        icon: "success",
-                    });
-                } else {
-                    swal("Ok. Continue 😀");
-                }
-            });
+                    title: "DELETE TABLE DATA?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
+                .then((del) => {
+                    if (del) {
+                        Storage.delete('table')
+                        this.updateVals()
+                        this.clearTable()
+                        swal("Table deleted", {
+                            icon: "success",
+                        });
+                    } else {
+                        swal("Ok. Continue 😀");
+                    }
+                });
         })
 
+    }
+
+    search() {}
+
+    fetchClosing() {
+        const postData = {
+            class: "ChicJoint",
+            method: "getClosingStock",
+            state: true
+        }
+        Server.post(postData, (data) => {
+            console.log(data);
+            Storage.saveToLs('data', data.details)
+            this.data = data.details
+            this.addProductItem()
+            this.updateVals()
+
+        })
     }
     updateVals() {
         const data = Storage.getFromLs('data')
         this.remainder.innerText = `${data.length} Items remaining`
-        
+
         const table = Storage.getFromLs('table')
-        if(table.length > 0 ){
+        if (table.length > 0) {
             this.upload.style.display = 'block'
             this.clear.style.display = 'block'
-        }else{
+        } else {
             this.upload.style.display = 'none'
             this.clear.style.display = 'none'
         }
     }
 
-    deleteLsData(){
+    deleteLsData() {
         Storage.delete('data')
         Storage.delete('table')
     }
@@ -398,13 +467,141 @@ class Bookkeeping extends Section {
 
 
     }
-    clearTable(){
-        this.table.innerHTML =""
+    clearTable() {
+        this.table.innerHTML = ""
     }
 }
 
-class Setting extends Section {}
+class Setting extends Section {
+    loadElements(section) {
+        this.cards = section.querySelectorAll('.card')
+        
 
+    }
+    addListeners() {
+        this.cards.forEach(card => {
+            if (card.hasAttribute('target')) {
+                card.classList.add('clickable-card')
+                card.addEventListener('click', () => {
+                    const section = card.getAttribute('target')
+                    //evaluate the clas
+                    eval(`new ${Utils.toTitleCase(section)}`)
+                })
+            }
+        })
+    }
+    search() {}
+}
+
+class Product extends Section {
+    constructor() {
+        super()
+
+
+    }
+    loadElements(section) {
+        const products = Storage.getFromLs('products')
+        const dataArray = Array.from(products, item => [item.name])
+        
+        const productName = section.querySelector('#Pname')
+        const productBarcode = section.querySelector('#Pbarcode')
+        const ProductPrice = section.querySelector('#Pprice')
+        const productPicture = section.querySelector('#Pimage')
+        $(document).ready(function () {
+            const table = $('#product-table').DataTable({
+                scrollY: 400,
+                paging: false,
+                "data": dataArray
+
+            });
+
+            $('#product-table tbody').on('click', 'tr', function () {
+                var data = table.row( this ).data();
+                // alert( 'You clicked on '+data[0]+'\'s row' );
+
+                $.each(products, function(index, value){
+                    if(value.name === data[0]){
+                        productName.value = value.name
+                        productBarcode.value = value.barcode
+                        ProductPrice.value = value.amount
+                        productPicture.setAttribute('src', `../assets/images/${value.image}`)
+                    }
+                })
+            } );
+
+        });
+        //pproduct rows
+        
+        // this.ProductPrice = section.querySelector('#')
+
+
+    }
+    addListeners() {
+        
+       
+    }
+    search() {}
+}
+
+class resulttable extends Section{
+
+    constructor(){
+        super()
+        const data = Storage.getFromLs('newdata')
+        const dataArray = []
+        // this.tbody.innerHTML = ""
+        data.forEach(item => {
+            for ([key, value] of Object.entries(item)) {
+                if (value == null) item[key] = 0
+            }
+
+            item.totalStock = parseInt(item.opening) + parseInt(item.added)
+            item.closingStock = parseInt(item.totalStock) - parseInt(item.sales)
+            item.totalAmount = parseInt(item.sales) * parseInt(item.price)
+
+            dataArray.push(item)
+        })
+        console.log(dataArray);
+
+        $(document).ready(function () {
+            $('#result-book-table').DataTable({
+                scrollY: 400,
+                retrieve: true,
+                destroy: true,
+                "data": dataArray,
+                "columns": [{
+                        "data": "description"
+                    },
+                    {
+                        "data": "opening"
+                    },
+                    {
+                        "data": "added"
+                    },
+                    {
+                        "data": "totalStock"
+                    },
+                    {
+                        "data": "closingStock"
+                    },
+                    {
+                        "data": "sales"
+                    },
+                    {
+                        "data": "price"
+                    },
+                    {
+                        "data": "totalAmount"
+                    },
+                ]
+            });
+
+        });
+    }
+    loadElements(section){}
+    addListeners(){}
+    search(){}
+}
 
 //start the application 
 POS.start()
