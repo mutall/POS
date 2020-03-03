@@ -33,8 +33,9 @@
         })
             .then(response => response.json())
             .then(result => saveToLs(result))
-            .catch(err => console.error(err))
+            .catch(err => console.error(err));
         const saveToLs = data => {
+            console.log(data);
             storage = window.localStorage
             for ([key, value] of Object.entries(data)) {
                 storage.setItem(key, JSON.stringify(value))
@@ -375,12 +376,12 @@
                         <div class="card-body">
                             <form action="" id="session-form" class="form">
                                 <div class="form-group">
-                                    <select id="staffInputState" class="form-control">
-                                        <option selected>SELECT STAFF</option>
+                                    <select id="staffInputState" name="session-staff" class="form-control">
+                                        <option selected disabled>SELECT STAFF</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <select id="stationInputState" class="form-control">
+                                    <select id="stationInputState" name="session-station" class="form-control">
                                         <option selected>SELECT STATION</option>
                                     </select>
                                 </div>
@@ -393,21 +394,21 @@
                                 <span data-toggle="tooltip" data-placement="top" title="Direction stock is coming from"
                                       class="mr-3">Session Direction</span>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="exampleRadios"
+                                        <input class="form-check-input" type="radio" name="session-direction"
                                                id="inRadio" value="in">
                                         <label class="form-check-label" for="inRadio">
                                             in
                                         </label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="exampleRadios"
+                                        <input class="form-check-input" type="radio" name="session-direction"
                                                id="outRadio" value="out">
                                         <label class="form-check-label" for="outRadio">
                                             out
                                         </label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="exampleRadios"
+                                        <input class="form-check-input" type="radio" name="session-direction"
                                                id="stockRadio" value="stock" checked>
                                         <label class="form-check-label" for="exampleRadios3">
                                             stock
@@ -418,15 +419,15 @@
                                 <span data-toggle="tooltip" data-placement="top" title="status of the session"
                                       class="mr-3">Session Status</span>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="status"
-                                               id="regular" value="regular" checked>
+                                        <input class="form-check-input" type="radio" name="session-status"
+                                               id="inRadio" value="regular" checked>
                                         <label class="form-check-label" for="inRadio">
                                             regular
                                         </label>
                                     </div>
                                     <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="status"
-                                               id="actual" value="actual">
+                                        <input class="form-check-input" type="radio" name="session-status"
+                                               id="outRadio" value="actual">
                                         <label class="form-check-label" for="outRadio">
                                             actual
                                         </label>
@@ -443,19 +444,21 @@
                         <div>
                             <h6 class="text-center">Session Details</h6>
                             <div class="d-flex flex-row p-3 justify-content-around">
-                                <p>station: <span>Counter</span></p>
-                                <p>staff: <span>Emmah</span></p>
-                                <p>date: <span>12/12/2020</span></p>
-                                <p>direction: <span>stock</span></p>
-                                <p>status: <span>regular</span></p>
-                                <button class="btn btn-sm btn-primary">change</button>
+                                <p>station: <span id="station-detail">Counter</span></p>
+                                <p>staff: <span id="staff-detail">Emmah</span></p>
+                                <p>date: <span id="date-detail">12/12/2020</span></p>
+                                <p>direction: <span id="direction-detail">stock</span></p>
+                                <p>status: <span id="status-detail">regular</span></p>
+                                <!--                                <button class="btn btn-sm btn-primary" id="change-detail">change</button>-->
                             </div>
                         </div>
                         <div class="d-flex flex-row justify-content-around">
-                            <table class="col-sm-6 table-bordered mr-5 " id="product-table">
-                                <thead>
-                                <th>name</th>
-                                </thead class="thead-dark">
+                            <table class="table-bordered mr-5 " id="product-table">
+                                <thead class="thead-dark">
+                                <tr>
+                                    <th>name</th>
+                                </tr>
+                                </thead>
                                 <tbody id="product-tbody"></tbody>
                             </table>
                             <div class="card d-flex flex-column justify-content-around p-5">
@@ -468,8 +471,8 @@
                                         <input type="number" class="form-control form-control-sm" id="qty">
                                     </div>
                                     <div class="form-group">
-                                        <input type="submit" class="btn btn-outline-primary" id="qty">
-                                        <input type="reset" class="btn btn-outline-danger" id="qty">
+                                        <input type="submit" class="btn btn-outline-primary">
+                                        <input type="reset" class="btn btn-outline-danger">
 
                                     </div>
                                 </form>
@@ -593,7 +596,7 @@
                         </table>
                         <div class="card card-large-icons d-flex justify-content-around">
                             <div class="product-image">
-                                <img src="../assets/images/balozi.jpg" id="Pimage" alt="balozi" srcset="">
+                                <img src="../assets/images/balozi.jpg" id="pombe-image" alt="balozi" srcset="">
                             </div>
                             <div class="card-body product-details d-flex flex-column">
                                 <form action="" class="form">
