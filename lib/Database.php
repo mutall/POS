@@ -18,7 +18,7 @@ require_once 'Config.php';
     public string $error;
     
     //save the instance of a db
-    private static ?PDO $instance;
+    private static ?PDO $instance = null;
     
     
     private function __construct(){
