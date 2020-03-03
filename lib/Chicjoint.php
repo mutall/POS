@@ -1,7 +1,7 @@
 <?php
-require_once 'models/product.php';
-require_once 'models/staff.php';
-require_once 'models/station.php';
+require __DIR__.'/models/product.php';
+require __DIR__.'/models/staff.php';
+require __DIR__.'/models/station.php';
 
 //TODO write a query that retirves the last closing balance for a particular product
 
@@ -11,60 +11,63 @@ $data = json_decode(file_get_contents('php://input'));
 
 
 //check for class and method variables
-if(isset($data->class) && isset($data->method)){
+if (isset($data->class) && isset($data->method)) {
     run($data->class, $data->method, $data->state);
 }
 
 //create a  function that takes in a class name and method and runs the class and method
-function run($class, $method, $static = false){
-    if(class_exists($class)){
+function run($class, $method, $static = false)
+{
+    if (class_exists($class)) {
         //check if method exists
-        if($static){
+        if ($static) {
             return (method_exists($class, $method)) ? $class::$method() : die("Class $class doesnt contain method $method");
-        }else{
+        } else {
             $obj = new $class;
-            return (method_exists($obj, $method))? $obj->$method() : die("Class $class doesnt contain method $method");
+            return (method_exists($obj, $method)) ? $obj->$method() : die("Class $class doesnt contain method $method");
         }
-        
-    }else{
+
+    } else {
         die("No class by the name $class");
     }
 }
 
 
 /**
- * This will be the main php entry file 
- * Most database operations will be handled by this file 
+ * This will be the main php entry file
+ * Most database operations will be handled by this file
  */
-
-class ChicJoint 
+class ChicJoint
 {
     /**
      * This method will be called before the system initialises.
-        why?? 
-        The querys all pull values that are always constant in the system i.e product names, staff members stations
+     * why??
+     * The querys all pull values that are always constant in the system i.e product names, staff members stations
      */
     public function init()
     {
         $arr = [];
-        $product = new Product;
+
         $staff = new Staff;
         $station = new Station;
+        $product = new Product;
 
-        $arr['products'] = $product->records();
-        $arr['staff'] = $staff->records();
-        $arr['station'] = $station->records();
-
+        try {
+            $arr['products'] = $product->records();
+            $arr['staff'] = $staff->records();
+            $arr['station'] = $station->records();
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
         echo json_encode($arr);
     }
-  
+
     //get stok of a counter for  particular day
     static public function getStock()
     {
         global $data;
         $arr = array();
-        
-       
+
 
         echo json_encode($arr);
     }
@@ -77,12 +80,13 @@ class ChicJoint
     {
 
         $arr = [];
-        
+
         echo json_encode($arr);
     }
 
 }
-//this code is for inserting barcode readings 
+
+//this code is for inserting barcode readings
 class BarcodeController
 {
     public $db;
@@ -136,6 +140,7 @@ class BarcodeController
         $update = "UPDATE product SET quantity = $quantity WHERE barcode = '$this->barcode'";
         $this->db->exec($update);
     }
+
     function update_quantity()
     {
         $barcode = $_POST['scanned'];
