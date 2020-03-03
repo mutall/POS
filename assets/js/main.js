@@ -1,4 +1,7 @@
-//create the main entrypoint for our system
+//speed up debbuging, declare a preset section
+var activeSection = "Stock";
+//create the main entrypoint for our
+
 const POS = (() => {
 
     return {
@@ -39,9 +42,9 @@ const POS = (() => {
                         eval(`new ${Utils.toTitleCase(section)}`)
                     })
                 }
-            })
+            });
 
-            new Dashboard()
+            eval(`new ${Utils.toTitleCase(activeSection)}`);
         },
         stop: () => {
             swal({
@@ -122,7 +125,7 @@ class Storage {
 
 //create a class or fetching data from server
 class Server {
-    static url = '../lib/chicjoint.php'
+    static url = '../lib/Chicjoint.php'
     static async get(callback) {
         const response = await fetch(this.url)
         if (await response.status === 200) {
@@ -196,7 +199,7 @@ class Dashboard extends Section {
     search() {}
 }
 
-class Stock extends Section {
+class Record extends Section {
     constructor() {
         super()
     }
@@ -292,7 +295,7 @@ class Stock extends Section {
 
 }
 
-class Bookkeeping extends Section {
+class Stock extends Section {
     constructor() {
         super()
         this.deleteLsData()
@@ -301,9 +304,8 @@ class Bookkeeping extends Section {
 
     }
 
-
-
     loadElements(section) {
+        this.sessionForm = section.querySelector("#session-form")
         this.productName = section.querySelector("#product-name")
         this.stockQuantity = section.querySelector("#quantity")
         this.remainder = section.querySelector("#remainder")
@@ -316,9 +318,17 @@ class Bookkeeping extends Section {
         this.date = section.querySelector('#date')
         this.upload = section.querySelector('#upload')
         this.clear = section.querySelector('#clear')
+        this.sessionCard = section.querySelector("#session-card")
+        this.entry = section.querySelector(".stock-entry")
     }
 
     addListeners() {
+        this.sessionForm.addEventListener('submit', (e)=> {
+            console.log(this.sessionCard)
+            this.sessionCard.classList.add("no-display")
+            this.entry.style.display = 'block';
+            e.preventDefault();
+        });
         this.form.addEventListener('submit', (e) => {
             e.preventDefault()
             const tr = document.createElement('tr');

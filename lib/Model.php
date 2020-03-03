@@ -1,5 +1,5 @@
 <?php
-require_once 'database.php';
+require_once 'Database.php';
 
 abstract class Model 
 {
@@ -41,7 +41,6 @@ abstract class Model
         });
     }
 
-
     abstract static function create($arg):object;
 
     //create a method for fetching records from a database 
@@ -62,7 +61,7 @@ abstract class Model
     }
 
     // create a method for fetching one item from table
-    protected function record($args, $value):object{
+    public function record($args, $value):object{
         //sql containing the where  parameters
         $sql = "SELECT * FROM ".self::$tableName. " WHERE $args = '$value'";
 

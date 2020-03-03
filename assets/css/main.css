@@ -37,3 +37,9 @@ section:not(.active){
 #product-table_wrapper{
   width: 30%;;
 }
+.no-display{
+  display: none !important;
+}
+.stock-entry{
+  display: none;
+}
