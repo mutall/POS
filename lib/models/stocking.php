@@ -1,8 +1,8 @@
-<?php 
+<?php
+require __DIR__."/../BaseModel.php";
 
-class Stocking extends Model{
-    private int $buy_price;
-    private int $sell_price;
+class Stocking extends BaseModel{
+    private int $buy_price, $sell_price;
     private Business $business;
     private Product $product;
     
@@ -12,8 +12,8 @@ class Stocking extends Model{
         parent::__construct();
     }
 
-    public function create($arg)
+    public function create($arg):Stocking
     {
-        
+        return new Stocking();
     }
 }

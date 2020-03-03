@@ -1,9 +1,9 @@
 <?php
 
-require_once '../Model.php';
+require __DIR__."/../BaseModel.php";
 
-class Owner extends Model{
-    private $username;
+class Owner extends BaseModel{
+    private String $username;
 
     public function __construct()
     {
@@ -11,18 +11,16 @@ class Owner extends Model{
     }
 
 
-    public static function create($arg):Owner
+    public function create($arg):Owner
     {
         $owner = new Owner;
         $owner->username = $arg->username;
 
-        $sql =  "INSERT INTO ".self::$tableName."(username) VALUES('$arg->username')";
+        $sql =  "INSERT INTO ".$this->tableName."(username) VALUES('$arg->username')";
         
         
         // echo $sql;
-         if(self::$db->exec($sql) <1){
-            throw new Exception("Failed to insert product ". self::$db->error);
-         };
+         if(self::$db->exec($sql) <1) throw new Exception("Failed to insert product ". self::$db->errorInfo());;
          
          return $owner;
     }

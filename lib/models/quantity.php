@@ -1,10 +1,10 @@
-<?php 
-require_once '../Model.php';
+<?php
+require __DIR__."/../BaseModel.php";
 require_once 'session.php';
-require_once 'stoocking.php';
+require_once 'stocking.php';
 
 
-class Quantity extends Model{
+class Quantity extends BaseModel{
     private int $value;
     private Session $session;
     private Stocking $stocking;
@@ -15,8 +15,8 @@ class Quantity extends Model{
         parent::__construct();
     }
 
-    public static function create($arg)
+    public function create($arg):Quantity
     {
-        
+        return new Quantity();
     }
 }
