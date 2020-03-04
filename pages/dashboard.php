@@ -376,19 +376,20 @@
                         <div class="card-body">
                             <form action="" id="session-form" class="form">
                                 <div class="form-group">
-                                    <select id="staffInputState" name="session-staff" class="form-control">
-                                        <option selected disabled>SELECT STAFF</option>
+                                    <label for="staffInputState">SELECT STAFF</label>
+                                    <select id="staffInputState" name="session-staff" class="form-control" required>
+
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <select id="stationInputState" name="session-station" class="form-control">
-                                        <option selected>SELECT STATION</option>
+                                    <label for="stationInputState">SELECT STATION</label>
+                                    <select id="stationInputState" name="session-station" class="form-control" required>
                                     </select>
                                 </div>
                                 <div class="form-group">
                                     <label for="date">Session Date</label>
                                     <input type="date" class="form-control" name="session-date" id="date"
-                                           placeholder="session date">
+                                           placeholder="session date" required>
                                 </div>
                                 <div class="form-group">
                                 <span data-toggle="tooltip" data-placement="top" title="Direction stock is coming from"
@@ -462,8 +463,10 @@
                                 <tbody id="product-tbody"></tbody>
                             </table>
                             <div class="card d-flex flex-column justify-content-around p-5">
+                                <h3 id="product-name" class="text-center">product name</h3>
+                                <h6 id="product-barcode" class="text-center">product barcode</h6>
                                 <div class="product-image">
-                                    <img src="../assets/images/balozi.jpg" id="Pimage" alt="balozi" srcset="">
+                                    <img src="#" id="pombe-image" alt="product image" srcset="">
                                 </div>
                                 <form action="" id="submit-drink">
                                     <div class="form-group">
