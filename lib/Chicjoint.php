@@ -1,7 +1,14 @@
 <?php
-require __DIR__.'/models/product.php';
-require __DIR__.'/models/staff.php';
-require __DIR__.'/models/station.php';
+/**
+ * @todo insert session data gotten from javascript
+ * @todo retrieve list of sessions created throughout the lifecycle
+ * @todo given a session id retrieve relevant session data associated with it
+ *
+ */
+require __DIR__ . '/models/product.php';
+require __DIR__ . '/models/staff.php';
+require __DIR__ . '/models/station.php';
+require __DIR__ . '/models/session.php';
 
 //TODO write a query that retirves the last closing balance for a particular product
 
@@ -86,6 +93,63 @@ class ChicJoint
 
 }
 
+/**
+ * Class Session
+ * This class will be for controlling session details, either inserting a session or retrieving pprevious sessions
+ */
+class StockSession
+{
+
+    private Session $session;
+
+    public function __construct()
+    {
+        $this->init();
+        //create a prepared statement
+
+
+    }
+
+    public function init()
+    {
+        //get post items
+        global $data;
+        //insert session details
+        $session_details = $data->data;
+
+        try {
+            //insert staff
+            $staff = new Staff();
+            $staff->create($session_details->staff);
+
+            //insert station
+            $station = new Station();
+            $station->create($session_details->station);
+
+            //create a new session object
+            $obj = new stdClass();
+            $obj->date = $session_details->session->date;
+            $obj->direction = $session_details->session->direction;
+            $obj->staff = $staff;
+            $obj->station = $station;
+            //session
+            $session = new Session();
+            $this->session = $session->create($obj);
+        } catch (Exception $e) {
+            die($e->getMessage());
+        }
+
+    }
+
+    public function commitSession()
+    {
+
+    }
+}
+
+/**
+ * Class BarcodeController
+ */
 //this code is for inserting barcode readings
 class BarcodeController
 {
