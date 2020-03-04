@@ -1,4 +1,8 @@
 <?php
+/**
+ * @todo create sql generator for child clasees
+ * @todo
+ */
 require_once 'Database.php';
 
 abstract class BaseModel
