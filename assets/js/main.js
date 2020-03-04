@@ -1,12 +1,7 @@
-//TODO set onclick to datatable item to change the current item
-//TODO implement the search functionality to include barcodes
-//TODO append the entry to table below
 //TODO save both the table and session details to the database
-//TODO change jquery implementation to plain javascript for datatables
-//TODO
 
 //speed up debbuging, declare a preset section
-var activeSection = "Stock";
+var activeSection = "Dashboard";
 //create the main entrypoint for our
 
 const POS = (() => {
@@ -75,7 +70,6 @@ const POS = (() => {
         }
     }
 })();
-
 
 //create my own exception object 
 class UserException {
@@ -171,10 +165,10 @@ class Section {
         //get the id of the section
         this.id = this.constructor.name
         this.section = document.querySelector(`#${this.id.toLowerCase()}`)
-        this.init()
-        this.loadElements(this.section)
-        this.addListeners()
-        this.search(document.querySelector("#search-box"))
+        this.init();
+        this.loadElements(this.section);
+        this.addListeners();
+        this.search(document.querySelector("#search-box"));
     }
 
     init() {
@@ -189,11 +183,13 @@ class Section {
 
     addListeners() {
         throw new UserException(`Must implement ${this.addListeners.name} in child classes`)
-
     }
 
-    search() {
-        throw new UserException(`Must implement ${this.search.name} in child classes"`)
+    search(elem) {
+        //dont show the search bar if child clases havent implemented the method
+        document.querySelector('#search-box').parentNode.style.display = 'none';
+
+        return false;
     }
 
     static switch(target) {
@@ -214,8 +210,7 @@ class Dashboard extends Section {
     addListeners() {
     }
 
-    search() {
-    }
+
 }
 
 class Record extends Section {
@@ -306,11 +301,6 @@ class Record extends Section {
 
     }
 
-    //implement search method
-    search(input) {
-        console.log(input);
-    }
-
 
 }
 
@@ -318,17 +308,40 @@ class Stock extends Section {
     constructor() {
         super();
         this.deleteLsData();
+        //create a copy of products and save to ls to mointor data collected
+        Storage.saveToLs('temp-data', Storage.getFromLs('products'));
+        //update values
+        this.updateVals();
+        //save the array to memeory for easy manipulation
+        this.data = Storage.getFromLs('temp-data');
+        //set the current product for easier massaging
+        this.currentProduct = this.data[0];
+        //set the first item to be read
+        this.addProductItem(this.currentProduct);
+
+
     }
 
     loadElements(section) {
+        //load the searchbar
+        this.searchBar = document.querySelector('#search-box');
+
         //remainder for stock left for reading
         this.remainder = section.querySelector("#remainder");
+        //initialise the table
+        this.table = section.querySelector('#product-table');
         //temp body to append stock
-        this.table = section.querySelector("#temp-body");
+        this.tBody = section.querySelector("#temp-body");
         //image element for pproduct
         this.image = section.querySelector("#pombe-image");
         //form to submit stock
         this.form = section.querySelector('#submit-drink');
+        //set product name
+        this.productName = section.querySelector("#product-name");
+        //barcode for item
+        this.productBarcode = section.querySelector("#product-barcode");
+        //input for quantity
+        this.quantity = section.querySelector('#qty');
 
         //buttons for sending to or from server
         this.upload = section.querySelector('#upload');
@@ -374,8 +387,7 @@ class Stock extends Section {
                 this.staffDropdown.appendChild(option);
             });
 
-            const productImage = document.querySelector("#Pimage");
-            var products = Storage.getFromLs('products');
+            let _this = this;
 
             //initialise products for datatabe
             $(document).ready(function () {
@@ -391,16 +403,8 @@ class Stock extends Section {
                 });
 
                 $('#product-table tbody').on('click', 'tr', function () {
-                    var data = table.row(this).data();
-                    // alert( 'You clicked on '+data[0]+'\'s row' );
-                    console.log(data);
-
-                    $.each(products, function (index, value) {
-                        if (value.name === data[0]) {
-                            console.log(value);
-                            productImage.setAttribute('src', `../assets/images/${value.image}`)
-                        }
-                    })
+                    _this.currentProduct = table.row(this).data();
+                    _this.addProductItem(_this.currentProduct);
                 });
             });
 
@@ -444,81 +448,79 @@ class Stock extends Section {
             e.preventDefault();
             const tr = document.createElement('tr');
             const tableTd = document.createElement('td');
-            tableTd.innerText = this.productName.innerHTML;
-            const openingTd = document.createElement('td');
-            openingTd.innerText = this.opening.value;
-            console.log(this.opening);
+            tableTd.innerText = this.currentProduct.name;
+            const quantityTd = document.createElement('td');
+            quantityTd.innerText = this.quantity.value;
 
             tr.appendChild(tableTd);
-            tr.appendChild(openingTd);
-            this.table.appendChild(tr);
+            tr.appendChild(quantityTd);
+            this.tBody.appendChild(tr);
 
             //get table from local storage
-            let tableLs = Storage.getFromLs('table');
+            let tableLs = Storage.getFromLs('temp-table');
             tableLs.push({
                 name: this.productName.innerHTML,
-                quantity: this.opening.value,
-                staff: 1,
-                station: 1,
+                quantity: this.quantity.value,
                 date: moment().format('YYYY/MM/DD'),
-                closing: this.stockQuantity.innerText,
-                sale: parseInt(this.opening.value) - parseInt(this.stockQuantity.innerText)
             });
-            Storage.saveToLs('table', tableLs);
+            Storage.saveToLs('temp-table', tableLs);
+            console.log(this.currentProduct);
+            if (this.data.length > 1) {
+                this.data = this.data.filter(item => parseInt(item.product) !== parseInt(this.currentProduct.product));
+                this.currentProduct = this.data[0];
 
-            this.data.shift();
-            this.addProductItem();
-            Storage.saveToLs('data', this.data);
-            this.updateVals();
+                this.addProductItem(this.currentProduct);
+                Storage.saveToLs('temp-data', this.data);
+                this.updateVals();
+            } else {
+                //completed data entry show a modal for notifying the user
+                alert("finished data entry");
+            }
+
+
         });
 
         //this are listeners when the user tries to upload the table
         this.upload.addEventListener('click', () => {
-            const postData = {
-                class: "ChicJoint",
-                method: "commitTable",
-                state: false,
-                data: Storage.getFromLs('table')
-            };
-            Server.post(postData, (data) => {
-                console.log(data);
+            //set a prompt to ask the user if he/she wants to commit to db
+            swal({
+                title: "Save Session?",
+                text: "Save the current stock taking session?",
+                icon: "info",
+                buttons: true,
+                dangerMode: true
+            }).then(ok =>{
+                if(ok){
+                    const session = Storage.getFromLs('session-details');
 
-                swal({
-                    title: "NICE!",
-                    text: "Successfully uploaded",
-                    icon: "success"
-                });
-
-                swal({
-                    title: "VIEW GENERATED TABLE?",
-                    icon: "info",
-                    buttons: true,
-                    dangerMode: true,
-                })
-                    .then((view) => {
-                        if (view) {
-                            const newData = {
-                                class: 'Chicjoint',
-                                method: 'getStock',
-                                state: true,
-                                date: moment().format('YYYY/MM/DD'),
-                                station: 1
-                            }
-                            Server.post(newData, (data) => {
-                                Storage.saveToLs('newdata', data.table)
-                                Section.switch('resulttable')
-                            })
-
-                        } else {
-                            swal("Ok. Continue 😀");
+                    const postData = {
+                        class: "Session",
+                        method: "commitSession",
+                        state: false,
+                        data: {
+                            session,
+                            table: Storage.getFromLs('table'),
+                            staff: session.staff,
+                            station: session.station
                         }
+                    };
+                    Server.post(postData, (data) => {
+                        console.log(data);
+
+                        swal({
+                            title: "NICE!",
+                            text: "Successfully uploaded",
+                            icon: "success"
+                        });
+
+                        this.updateVals();
+                        this.clearTable();
+                        Section.switch('Record');
                     });
-
-                Storage.delete("table");
-                this.updateVals();
-                this.clearTable();
-
-            });
+                }else{
+                    swal("Ok. Continue 😀");
+                }
+            })
         });
         this.clear.addEventListener('click', () => {
             swal({
@@ -543,43 +545,60 @@ class Stock extends Section {
 
     }
 
-    search() {
+    search(elem) {
+        elem.parentNode.style.display = 'block';
+        elem.removeEventListener('click', () => {
+        });
+        elem.addEventListener('change', (e) => {
+            e.preventDefault();
+
+            //check if the user has registered a session
+            if (this.sessionCard.classList.contains("no-display")) {
+                this.data.forEach(item => {
+                    if (item.barcode === e.target.value) {
+                        this.currentProduct = item;
+                        this.addProductItem(this.currentProduct);
+                        e.target.value = '';
+                        return;
+                    }
+                })
+            } else {
+                swal("You must register a session to use search");
+            }
+            //check if there exists a product with that barcode. in temp directory
+
+        });
+
+
     }
 
     updateVals() {
-        const data = Storage.getFromLs('data')
-        this.remainder.innerText = `${data.length} Items remaining`
+        const data = Storage.getFromLs('temp-data');
+        this.remainder.innerText = `${data.length} Items remaining`;
 
-        const table = Storage.getFromLs('table')
+        const table = Storage.getFromLs('temp-table');
         if (table.length > 0) {
-            this.upload.style.display = 'block'
-            this.clear.style.display = 'block'
+            this.upload.style.display = 'block';
+            this.clear.style.display = 'block';
         } else {
-            this.upload.style.display = 'none'
-            this.clear.style.display = 'none'
+            this.upload.style.display = 'none';
+            this.clear.style.display = 'none';
         }
     }
 
     deleteLsData() {
         Storage.delete('data');
-        Storage.delete('table');
+        Storage.delete('temp-table');
     }
 
-    addProductItem() {
-        const product = this.data[0];
-        console.log(product);
-        this.productName.innerHTML = product.name
-        this.stockQuantity.innerHTML = product.quantity
-        this.opening.value = ""
-        this.date.innerText = product.date
-        this.image.setAttribute('src', `../assets/images/${product.image}`)
-        this.primary = product.primary;
-
-
+    addProductItem(item) {
+        this.productName.innerText = item.name;
+        this.productBarcode.innerText = item.barcode;
+        this.image.setAttribute('src', `../assets/images/${item.image}`);
     }
 
     clearTable() {
-        this.table.innerHTML = ""
+        this.tBody.innerHTML = ""
     }
 }
 
@@ -603,8 +622,8 @@ class Setting extends Section {
         })
     }
 
-    search() {
-    }
+    // search() {
+    // }
 }
 
 class Product extends Section {
@@ -657,8 +676,7 @@ class Product extends Section {
 
     }
 
-    search() {
-    }
+
 }
 
 class resulttable extends Section {
@@ -723,9 +741,8 @@ class resulttable extends Section {
     addListeners() {
     }
 
-    search() {
-    }
+
 }
 
 //start the application 
-POS.start()
+POS.start();
