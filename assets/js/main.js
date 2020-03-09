@@ -494,8 +494,8 @@ class Stock extends Section {
                     const session = Storage.getFromLs('session-details');
 
                     const postData = {
-                        class: "Session",
-                        method: "commitSession",
+                        class: "StockSession",
+                        method: "init",
                         state: false,
                         data: {
                             session,
