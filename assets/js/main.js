@@ -28,14 +28,17 @@ const POS = (() => {
                 message: 'Welcom back Emma',
                 position: 'bottomCenter'
             });
-            const list_sidebar = document.querySelector('.sidebar-menu')
-            const list_items = list_sidebar.querySelectorAll('li')
+            const list_navbar = document.querySelector('.main-nav')
+            const list_items = list_navbar.querySelectorAll('li')
+            // console.log(list_items);
+            // console.log(list_navbar);
+
 
             list_items.forEach(item => {
                 if (item.hasAttribute('target')) {
                     item.addEventListener('click', () => {
                         //set the list item as active
-                        list_sidebar.querySelector('.active').classList.remove('active')
+                        list_navbar.querySelector('.active').classList.remove('active')
                         item.classList.add('active')
 
 
@@ -50,11 +53,11 @@ const POS = (() => {
         },
         stop: () => {
             swal({
-                title: "LOGOUT?",
-                icon: "warning",
-                buttons: true,
-                dangerMode: true,
-            })
+                    title: "LOGOUT?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
                 .then((logout) => {
                     if (logout) {
                         swal("You hav successfully logged out", {
@@ -148,12 +151,14 @@ class Server {
             method: 'post',
             body: JSON.stringify(data)
         })
-        if (await response.status === 200) {
-            const x = "jhdfgjghaeg"
+        if (await response.status === 200 || await response.status === 201 || await response.status === 202) {
             callback(await response.json())
         } else {
-            console.error(`Server came bak with status ${await response.status} body: ${await response.body}`);
+            const code = await response.status;
+            const body = await response.statusText;
 
+            //handle bad response here, open page with associated error code
+            new ErrorPage(code, body);
         }
     }
 
@@ -169,11 +174,17 @@ class Section {
         this.loadElements(this.section);
         this.addListeners();
         this.search(document.querySelector("#search-box"));
+
+
     }
 
     init() {
         document.querySelector('section.active').classList.remove('active')
         document.querySelector(`#${this.id.toLowerCase()}`).classList.add('active')
+        const navBtn = document.querySelector('.hide-nav');
+        navBtn.addEventListener('click', () => {
+            navBtn.parentNode.parentNode.style.display = "none";
+        });
 
     }
 
@@ -192,11 +203,17 @@ class Section {
         return false;
     }
 
-    static switch(target) {
+    static
+    switch (target, data) {
+        data = (typeof data !== undefined) ? JSON.stringify(data) : undefined
         // document.querySelector('section.active').classList.remove('active')
         // document.querySelector(`#${target}`).classList.add('active')
-        eval(`new ${target}()`)
+
+
+        eval(`new ${target}(${data})`)
     }
+
+
 }
 
 class Dashboard extends Section {
@@ -205,9 +222,21 @@ class Dashboard extends Section {
     }
 
     loadElements(section) {
+        this.cards = section.querySelectorAll('.card')
     }
 
     addListeners() {
+        this.cards.forEach(card => {
+            if (card.hasAttribute('target')) {
+                card.classList.add('clickable-card')
+                card.addEventListener('click', () => {
+                    const section = card.getAttribute('target')
+                    //evaluate the clas
+                    eval(`new ${Utils.toTitleCase(section)}`)
+                })
+            }
+        })
+
     }
 
 
@@ -219,86 +248,78 @@ class Record extends Section {
     }
 
     loadElements(section) {
-        this.stations = Storage.getFromLs('station')
-        this.selectElement = section.querySelector('#stationInputState')
-        this.stationForm = section.querySelector('#station-form')
-        this.stockDate = section.querySelector('#stockDate')
-        this.tbody = section.querySelector('.result-body')
-
+        this.sessionCards = section.querySelector("#session-cards");
     }
 
     addListeners() {
-        this.stations.forEach(station => {
-            let optionElem = document.createElement('option')
-            optionElem.innerText = station.name.toUpperCase();
-            optionElem.setAttribute('id', station.location)
-            this.selectElement.appendChild(optionElem)
-        })
+        //load all session details as soon as the section loads
+        (() => {
+            const staffData = Storage.getFromLs('staff');
+            const stationData = Storage.getFromLs('station');
 
-        this.stationForm.addEventListener('submit', (e) => {
-            e.preventDefault()
-            const selectedStation = this.selectElement.options[this.selectElement.selectedIndex].id
-            const postBody = {
-                class: 'Chicjoint',
-                method: 'getStock',
-                state: true,
-                date: this.stockDate.value,
-                station: selectedStation
+            const postData = {
+                class: 'StockSession',
+                method: 'getSessionList',
+                state: true
             }
-            Server.post(postBody, (data) => {
-                const dataArray = []
-                // this.tbody.innerHTML = ""
-                data.table.forEach(item => {
-                    for ([key, value] of Object.entries(item)) {
-                        if (value == null) item[key] = 0
-                    }
 
-                    item.totalStock = parseInt(item.opening) + parseInt(item.added)
-                    item.closingStock = parseInt(item.totalStock) - parseInt(item.sales)
-                    item.totalAmount = parseInt(item.sales) * parseInt(item.price)
+            Server.post(postData, (data) => {
+                data.forEach(item => {
+                    const staff = staffData.filter(member => member.staff == item.staff)[0].name;
+                    const station = stationData.filter(member => member.station == item.station)[0].name;
+                    const formattedDate = moment(item.date).format("dddd, MMMM Do YYYY, h:mm a")
+                    let elem = this.buildCard(item.session, formattedDate, staff, station, item.direction)
 
-                    dataArray.push(item)
+                    this.sessionCards.appendChild(elem)
+
                 })
-                console.log(dataArray);
+                this.buttons = this.section.querySelectorAll('.session-details');
+                console.log(this.buttons);
+                this.buttonListener()
 
-                $(document).ready(function () {
-                    $('#stock-table').DataTable({
-                        scrollY: 400,
-                        retrieve: true,
-                        destroy: true,
-                        "data": dataArray,
-                        "columns": [{
-                            "data": "description"
-                        },
-                            {
-                                "data": "opening"
-                            },
-                            {
-                                "data": "added"
-                            },
-                            {
-                                "data": "totalStock"
-                            },
-                            {
-                                "data": "closingStock"
-                            },
-                            {
-                                "data": "sales"
-                            },
-                            {
-                                "data": "price"
-                            },
-                            {
-                                "data": "totalAmount"
-                            },
-                        ]
-                    });
+            })
+        })();
 
-                });
+    }
+
+    buttonListener() {
+        this.buttons.forEach(button => {
+            button.addEventListener('click', () => {
+                //get the session id
+                const id = button.parentNode.getAttribute('id');
+
+                const postData = {
+                    class: "StockSession",
+                    method: "getSessionDetails",
+                    state: true,
+                    data: {
+                        id: id.split('_')[1]
+                    }
+                }
+                Server.post(postData, (data) => {
+
+                    Section.switch('Table', data);
+
+                })
 
             })
         })
+    }
+    buildCard(id, date, staff, station, direction) {
+        let card = document.createElement('div');
+        card.classList.add('card');
 
+        const html = `<div class="card-body records">
+        <h6  class="text-dark text-center">Date: ${date}</h6>
+        <div class="row d-flex justify-content-around" id="session_${id}">
+            <p class="lead session-staff">Staff: <span class="text-dark">${staff}</span></p>
+            <p class="lead session-counter">Counter: <span class="text-dark">${station}</span></p>
+            <p class="lead session-direction">Direction: <span class="text-dark">${direction}</span></p>
+            <button class="btn btn-icon icon-left btn-info session-details" id=""><i class="fas fa-info-circle"></i>VIEW</button>
+        </div>
+    </div>`;
+        card.innerHTML = html;
+        return card;
     }
 
 
@@ -398,8 +419,7 @@ class Stock extends Section {
                     "data": Storage.getFromLs("products"),
                     "columns": [{
                         "data": "name"
-                    }
-                    ]
+                    }]
                 });
 
                 $('#product-table tbody').on('click', 'tr', function () {
@@ -422,11 +442,17 @@ class Stock extends Section {
             const date = formData.get("session-date");
             const direction = formData.get("session-direction");
             const status = formData.get("session-status");
-            console.log(staff);
+
+            const staffId = Storage.getFromLs('staff').filter(item => item.name == staff)[0].staff;
+            const stationId = Storage.getFromLs('station').filter(item => item.name == station)[0].station;
+
+            // console.log(staffId);
+            // console.log(stationId);
+
 
             const details = {
-                staff,
-                station,
+                staff: staffId,
+                station: stationId,
                 date,
                 direction,
                 status
@@ -458,10 +484,11 @@ class Stock extends Section {
 
             //get table from local storage
             let tableLs = Storage.getFromLs('temp-table');
+            const array_id = this.data.filter(item => item.name === this.productName.innerHTML)[0];
+
             tableLs.push({
-                name: this.productName.innerHTML,
+                product: array_id.product,
                 quantity: this.quantity.value,
-                date: moment().format('YYYY/MM/DD'),
             });
             Storage.saveToLs('temp-table', tableLs);
             console.log(this.currentProduct);
@@ -489,19 +516,20 @@ class Stock extends Section {
                 icon: "info",
                 buttons: true,
                 dangerMode: true
-            }).then(ok =>{
-                if(ok){
+            }).then(ok => {
+                if (ok) {
                     const session = Storage.getFromLs('session-details');
 
                     const postData = {
                         class: "StockSession",
-                        method: "init",
+                        method: "commitSession",
                         state: false,
                         data: {
                             session,
-                            table: Storage.getFromLs('table'),
+                            table: Storage.getFromLs('temp-table'),
                             staff: session.staff,
-                            station: session.station
+                            station: session.station,
+                            date: session.date
                         }
                     };
                     Server.post(postData, (data) => {
@@ -517,18 +545,18 @@ class Stock extends Section {
                         this.clearTable();
                         Section.switch('Record');
                     });
-                }else{
+                } else {
                     swal("Ok. Continue 😀");
                 }
             })
         });
         this.clear.addEventListener('click', () => {
             swal({
-                title: "DELETE TABLE DATA?",
-                icon: "warning",
-                buttons: true,
-                dangerMode: true,
-            })
+                    title: "DELETE TABLE DATA?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                })
                 .then((del) => {
                     if (del) {
                         Storage.delete('table');
@@ -547,26 +575,29 @@ class Stock extends Section {
 
     search(elem) {
         elem.parentNode.style.display = 'block';
-        elem.removeEventListener('click', () => {
-        });
+        elem.removeEventListener('click', () => {});
         elem.addEventListener('change', (e) => {
-            e.preventDefault();
+
+            console.log(e.target.value);
 
             //check if the user has registered a session
             if (this.sessionCard.classList.contains("no-display")) {
                 this.data.forEach(item => {
-                    if (item.barcode === e.target.value) {
-                        this.currentProduct = item;
-                        this.addProductItem(this.currentProduct);
-                        e.target.value = '';
-                        return;
+                    if (e.target.value !== "") {
+                        if (item.barcode === e.target.value) {
+                            console.log(item);
+                            this.currentProduct = item;
+                            this.addProductItem(this.currentProduct);
+                            e.target.value = '';
+                            return;
+                        }
                     }
                 })
             } else {
                 swal("You must register a session to use search");
             }
             //check if there exists a product with that barcode. in temp directory
-
+            e.preventDefault();
         });
 
 
@@ -584,6 +615,10 @@ class Stock extends Section {
             this.upload.style.display = 'none';
             this.clear.style.display = 'none';
         }
+
+
+        this.quantity.value = "";
+        this.quantity.focus()
     }
 
     deleteLsData() {
@@ -605,8 +640,6 @@ class Stock extends Section {
 class Setting extends Section {
     loadElements(section) {
         this.cards = section.querySelectorAll('.card')
-
-
     }
 
     addListeners() {
@@ -679,69 +712,128 @@ class Product extends Section {
 
 }
 
-class resulttable extends Section {
-
+class Report extends Section {
     constructor() {
-        super()
-        const data = Storage.getFromLs('newdata')
-        const dataArray = []
-        // this.tbody.innerHTML = ""
-        data.forEach(item => {
-            for ([key, value] of Object.entries(item)) {
-                if (value == null) item[key] = 0
-            }
+        super();
+    }
+    loadElements(section) {
+        this.cards = section.querySelectorAll('.card');
+        this.form = section.querySelector('#report-form');
+        this.stationDropdown = section.querySelector('#station')
+        console.log(this.cards);
 
-            item.totalStock = parseInt(item.opening) + parseInt(item.added)
-            item.closingStock = parseInt(item.totalStock) - parseInt(item.sales)
-            item.totalAmount = parseInt(item.sales) * parseInt(item.price)
+    }
+    addListeners() {
 
-            dataArray.push(item)
-        })
-        console.log(dataArray);
+        (() => {
+            const stations = Storage.getFromLs('station');
 
-        $(document).ready(function () {
-            $('#result-book-table').DataTable({
-                scrollY: 400,
-                retrieve: true,
-                destroy: true,
-                "data": dataArray,
-                "columns": [{
-                    "data": "description"
-                },
-                    {
-                        "data": "opening"
-                    },
-                    {
-                        "data": "added"
-                    },
-                    {
-                        "data": "totalStock"
-                    },
-                    {
-                        "data": "closingStock"
-                    },
-                    {
-                        "data": "sales"
-                    },
-                    {
-                        "data": "price"
-                    },
-                    {
-                        "data": "totalAmount"
-                    },
-                ]
+            stations.forEach(station => {
+                let option = document.createElement('option');
+                option.setAttribute('value', station.station);
+                option.innerText = station.name;
+                this.stationDropdown.appendChild(option);
             });
+        })()
 
+        this.form.addEventListener('submit', (e) => {
+            const formData = new FormData(this.form);
+            console.log(formData);
+            const date = formData.get('date')
+            const station = formData.get('station')
+
+            const postData = {
+                class: "Reports",
+                method: this.type,
+                state: false,
+                data: {
+                    date,
+                    station
+                }
+            }
+            Server.post(postData, (response) => {
+                console.log(response);
+            })
+            e.preventDefault();
+        })
+        this.cards.forEach(card => {
+            card.classList.add('clickable-card');
+            card.addEventListener('click', () => {
+                this.type = card.getAttribute('method');
+                $('#modal-selector').modal({
+                    backdrop: false
+                });
+            });
         });
+    }
+}
+
+class Table extends Section {
+
+    constructor(data) {
+        super()
+        this.data = data;
+        this.loadData()
     }
 
     loadElements(section) {
+        this.staff = section.querySelector('#staff-detail');
+        this.station = section.querySelector('#station-detail');
+        this.date = section.querySelector('#date-detail');
+        this.direction = section.querySelector('#direction-detail');
+        this.tbody = section.querySelector('#temp-body');
     }
 
-    addListeners() {
+    loadData() {
+        // console.log(data);
+        const session = this.data.session_details;
+        const staffData = Storage.getFromLs('staff');
+        const stationData = Storage.getFromLs('station');
+        const staff = staffData.filter(member => member.staff == session.staff)[0].name;
+        const station = stationData.filter(member => member.station == session.station)[0].name;
+        const formattedDate = moment(session.date).format("dddd, MMMM Do YYYY, h:mm a")
+
+        this.staff.innerText = staff
+        this.station.innerText = station
+        this.date.innerText = formattedDate
+        this.direction.innerText = this.data.session_details.direction;
+
+        this.buildTable(this.data.table)
+    }
+    addListeners() {}
+
+    buildTable(rows) {
+        rows.forEach(row => {
+            let tr = document.createElement('tr');
+            let productTd = document.createElement('td');
+            let quantityTd = document.createElement('td');
+            productTd.innerText = row.name;
+            quantityTd.innerText = row.value;
+
+            tr.appendChild(productTd)
+            tr.appendChild(quantityTd)
+            this.tbody.appendChild(tr);
+        })
     }
 
+}
+/**
+ * class ErrorPage this is a class/page that will handle all server errors and display a static error page
+ */
+class ErrorPage extends Section {
+    constructor(code, body) {
+        super();
+        console.log(code);
 
+        this.statusCode.innerHTML = code;
+        this.statusMessage.innerText = body;
+    }
+
+    loadElements(section) {
+        this.statusCode = section.querySelector('#status-code');
+        this.statusMessage = section.querySelector('#status-message');
+    }
+    addListeners() {}
 }
 
 //start the application 
