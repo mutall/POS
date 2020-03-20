@@ -18,14 +18,14 @@ require_once 'Config.php';
     public string $error;
     
     //save the instance of a db
-    private static ?PDO $instance = null;
+    private static $instance = null;
     
     
     private function __construct(){
       // Set DSN
       $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname;
       $options = array(
-        PDO::ATTR_PERSISTENT => true,
+        PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
       );
 
