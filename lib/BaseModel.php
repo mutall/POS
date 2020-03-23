@@ -87,7 +87,7 @@ abstract class BaseModel
 
         if ($size < 1) {
             //no arguments were passed. throw exception
-            throw new LengthException("Number of arguments cannot be zero");
+            throw new \LengthException("Number of arguments cannot be zero");
         } else if ($size == 1) {
             foreach ($args as $key => $value) :
                 $whereArgs = $whereArgs ." $key = '$value'";
@@ -140,7 +140,7 @@ class ModelFactory
     {
         $modelName = ucfirst($modelName);
         if (class_exists($modelName)) {
-            $model = new $modelName;
+            $model = new $modelName(null);
             return $model->records();
         } else {
             throw new BadMethodCallException("class " . $modelName . " not found");
@@ -184,7 +184,7 @@ class Product extends BaseModel
 {
     public string $product, $name, $image, $category;
     public $barcode;
-    public function __construct($data = null)
+    public function __construct(?array $data = null)
     {
         parent::__construct($data);
     }
@@ -235,7 +235,7 @@ class Quantity extends BaseModel
     public String $sql;
     public $stmt;
 
-    public function __construct($data = null)
+    public function __construct(?array $data = null)
     {
         parent::__construct($data);
     }
@@ -280,7 +280,7 @@ class Session extends BaseModel
     public int $station, $staff, $session, $_id;
     
 
-    public function __construct($data = null)
+    public function __construct(?array $data = null)
     {
         parent::__construct($data);
     }
@@ -322,14 +322,14 @@ class Session extends BaseModel
         return $result->fetchAll(PDO::FETCH_CLASS, __CLASS__);
     }
     //given a session get the details about staff and station
-    public static function getSessionDetails($session){
+    public static function getSessionDetails($sessionId){
         $sql = "SELECT 
                     staff.name, station.name, session.direction, session.date 
                 FROM
                     session 
                         INNER JOIN staff ON session.staff = staff.staff
                         INNER JOIN station ON session.station = station.station
-                WHERE session = '$session'";
+                WHERE session = '$sessionId'";
         
         $result = self::$db->query($sql);
         return $result->fetchObject();
@@ -350,7 +350,7 @@ class Session extends BaseModel
 class Staff extends BaseModel
 {
     public string $staff, $name;
-    public function __construct($data = null)
+    public function __construct(?array $data = null)
     {
         parent::__construct($data);
     }
@@ -397,7 +397,7 @@ class Station extends BaseModel
     public string $station, $name;
 
 
-    public function __construct($data = null)
+    public function __construct(?array $data = null)
     {
         parent::__construct($data);
     }
@@ -441,7 +441,7 @@ class Stocking extends BaseModel
     public int $buy_price, $sell_price, $business, $product;
 
 
-    public function __construct($data = null)
+    public function __construct(?array $data = null)
     {
         parent::__construct($data);
     }
