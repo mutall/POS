@@ -1,11 +1,4 @@
 <?php
-// use Monolog\Logger;
-// use Monolog\Handler\StreamHandler;
-
-//  // create a log channel
-//  $log = new Logger('POS');
-//  $log->pushHandler(new StreamHandler(__DIR__ . '/../app.log', Logger::INFO));
-
 
 /**
  * @todo create sql generator for child clasees
@@ -13,55 +6,50 @@
  */
 require_once 'Database.php';
 
+/**
+ * Create an abstract base model that other models will extend.
+ * The base model will create an instance of the database, this one instance will be used by all database operations
+ * The base model will provide two methods for accessing data from enitiy tables
+ * What is a model? a model is a class that represents a datatbase entity
+ * Models have entity columns as class properties, 
+ * This type of design pattern is called the data access object pattern. 
+ * It is used to separate low level data accessing API or operations from high level business services.
+ * The idea was gotten from Njuguna's Real estate system
+ */
 abstract class BaseModel
 {
     //save the table name
     protected static String $tableName;
+    //save the instance of a database
     protected static $db;
 
-    //save data relating to an enetiti
-    // protected array $tableData;
-
-
-    //create an array to store class variables 
-    protected array $attrs;
-    public function __construct($data = null)
+    public function __construct()
     {
         //get the instance of a db
         self::$db = Database::getInstance();
-        // $x = get_class($this);
+
         //set the table name
         self::$tableName = strtolower(get_class($this));
-
-
-        if (!is_null($data)) {
-            $this->attrs = $data;
-            $data = null;
-            $this->create();
-        }
     }
 
-    public function __get($name)
-    {
-        if (!array_key_exists($name, $this->attrs)) {
-            throw new Exception("The requested key " . $name . " doesnt exist");
-        } else return $this->attrs[$name];
-    }
+    /**
+     * @method create()
+     * This method will involve creating a new record in an entity table 
+     * We set it as abstract because each entity will have a different implementation of create
+     * It should return the inserted row which should be a model representation
+     * @param array of arguments for object creation
+     * @return object Object representation of the model
+     */
+    abstract static function create(object $args): BaseModel;
 
-    public function __set($name, $value)
-    {
-        if (!isset($this->attrs)) {
-            $this->attrs = array();
-        }
-        $this->attrs[$name] = $value;
-    }
-
-    abstract function exists(): bool;
-
-
-    abstract function create(): object;
-
-    //create a method for fetching records from a database 
+    /**
+     * @method records
+     * This method will be used to fetch a list/ array of rows from an entity
+     * We establish a general implementation because fetching rows from a table is more or less the same procedure
+     * The method can be ovveriden in the child clasees for a more fine tuned fetch method or when fetching from 
+     * related tables.
+     * The return type is an array because we use the pdo method of fetchAll()
+     */
     public function records(): array
     {
         //sql for fetching items
@@ -76,26 +64,29 @@ abstract class BaseModel
         //return a class representation of the resultset
         return $result->fetchAll(PDO::FETCH_CLASS, ucfirst(self::$tableName));
     }
-
-    // create a method for fetching one item from table
+    /**
+     * @method record
+     * Method Used to fetch for a single row in an entity. 
+     * @param $args
+     * It takes an array of key/value pairs as $args which will be used to build the where clause in the sql
+     */
     public function record($args)
     {
         //get the size of arguments intended to build sql;
         $size = sizeof($args);
         $whereArgs = "WHERE ";
 
-
         if ($size < 1) {
             //no arguments were passed. throw exception
-            throw new \LengthException("Number of arguments cannot be zero");
+            throw new LengthException("Number of arguments cannot be zero");
         } else if ($size == 1) {
             foreach ($args as $key => $value) :
-                $whereArgs = $whereArgs ." $key = '$value'";
+                $whereArgs = $whereArgs . " $key = '$value'";
                 break;
             endforeach;
-        }else{
+        } else {
             foreach ($args as $key => $value) :
-                $whereArgs = $whereArgs." $key = '$value' AND";
+                $whereArgs = $whereArgs . " $key = '$value' AND";
             endforeach;
             //remove the trailing "AND"
             $whereArgs = explode(" ", trim($whereArgs));
@@ -103,7 +94,7 @@ abstract class BaseModel
             $whereArgs = implode(" ", $whereArgs);
         }
         //sql containing the where  parameters
-        $sql = "SELECT * FROM " . self::$tableName ." ". $whereArgs;
+        $sql = "SELECT * FROM " . self::$tableName . " " . $whereArgs;
 
         //svae thee result in a cursor variable
         $result = self::$db->query($sql);
@@ -120,27 +111,52 @@ abstract class BaseModel
     {
         return json_encode($this);
     }
-
+    /**
+     * @method getPrimary
+     * Gets the primary key of the the instance model. 
+     * 
+     */
     abstract function getPrimary(): int;
 }
 
-class ModelFactory
+/**
+ * Create a class ModelController thet will be used to interact with child classes.
+ * The class will be primarily made up of static methods 
+ */
+class ModelController
 {
-    public static function createModel(string $modelName, array $data): BaseModel
+    /**
+     * @method createModel
+     * This method will be used to call a method then invoke the create function on it
+     * The reason we i use this intermediate way rather than just calling the model::create()
+     * is because i want to do some error checking to see if the actual model exists 
+     * @param string $modelName The name of model
+     * @param array $data What is to be inserted in the model
+     * @return object Return an object of type BaseModel
+     */
+    public static function createModel(string $modelName, stdClass $data): BaseModel
     {
+        //convert to Sentence case 
         $modelName = ucfirst($modelName);
+
         if (class_exists($modelName)) {
-            return new $modelName($data);
+            return $modelName::create($data);
         } else {
             throw new BadMethodCallException("class " . $modelName . " not found");
         }
     }
 
+    /**
+     * @method getModelRecords
+     * Used to get the records for that particular model 
+     * @param string modelName The name of the model
+     * @return array This will return an array of model objects
+     */
     public static function getModelRecords(string $modelName): array
     {
         $modelName = ucfirst($modelName);
         if (class_exists($modelName)) {
-            $model = new $modelName(null);
+            $model = new $modelName;
             return $model->records();
         } else {
             throw new BadMethodCallException("class " . $modelName . " not found");
@@ -153,6 +169,8 @@ class ModelFactory
      * @param  string modelName
      * args is an array o associative key value pairs used for the where clause
      * @param array args
+     * 
+     * @return object a single object representation of the record
      */
     public static function getSingleRecord(string $modelName, array $args)
     {
@@ -164,58 +182,63 @@ class ModelFactory
             throw new BadMethodCallException("class " . $modelName . " not found");
         }
     }
-
-    public static function executeModel(string $class, string $method, bool $state = false, $args = null){
-        if (class_exists($class)) {
-            //check if method exists
-            if ($state) {
-                return (method_exists($class, $method)) ? $class::$method($args) : die("Class $class doesnt contain method $method");
-            } else {
-                $obj = new $class;
-                return (method_exists($obj, $method)) ? $obj->$method($args) : die("Class $class doesnt contain method $method");
-            }
-        } else {
-            die("No class by the name $class");
-        }
-    }
 }
 
 class Product extends BaseModel
 {
     public string $product, $name, $image, $category;
-    public $barcode;
-    public function __construct(?array $data = null)
+
+    //set a nullable parameter barcode because it can either have a value or return null
+    public ?string $barcode;
+    public function __construct()
     {
-        parent::__construct($data);
+        parent::__construct();
     }
 
-    public function create(): Product
+    public static function create($args): Product
     {
+        $product = new Product;
+        $product->name = $args->name;
+        $product->image = $args->image;
+        $product->category = $args->category;
+        $product->barcode = $args->barcode;
 
-        if (!$this->exists()) {
-            $sql = "INSERT INTO " . self::$tableName . "(name, barcode, image) VALUES('$this->name', '$this->barcode', '$this->image')";
-            if (self::$db->exec($sql) < 1) throw new Exception("Failed to insert product " . self::$db->errorInfo());
+
+        $sql = "INSERT INTO " . self::$tableName . "(name, barcode, image, category) 
+                VALUES (
+                        :name, 
+                        :barcode, 
+                        (SELECT image FROM image WHERE name = :image), 
+                        (SELECT category FROM category WHERE name = :category)
+                        )";
+        $stmt = self::$db->prepare($sql);
+
+        $stmt->bindParam(':name', $product->name);
+        $stmt->bindParam(':barcode', $product->barcode);
+        $stmt->bindParam(':category', $product->category);
+        $stmt->bindParam(':image', $product->image);
+
+        //check if it has inserted
+        if ($stmt->execute()) {
+            $product->product = self::$db->lastInsertId();
         }
-        return self::record(['barcode'=> $this->barcode]);
-    }
-    public function exists(): bool
-    {
-        $sql = "SELECT COUNT(*) FROM " . self::$tableName . " WHERE barcode = '$this->barcode'";
-        $result = self::$db->query($sql);
-        return (($result->fetchColumn() > 0) ? true : false);
+
+        return $product;
     }
 
+    //we override the default records from the basemodel because we retirve data from related entities
     public function records(): array
     {
+        //sql for retrieving products from database
         $sql = "SELECT 
-                    product.name, product.product, product.barcode, image.name as image, category.name as category
+                    product.name, product, product.barcode, image.name as image, category.name as category
                 FROM 
                     product
                         INNER JOIN image on product.image = image.image 
                         INNER JOIN category on product.category = category.category 
                 ORDER BY 
                     product.name ASC";
-        
+
         $result = self::$db->query($sql);
         return $result->fetchAll(PDO::FETCH_CLASS, __CLASS__);
     }
@@ -231,40 +254,58 @@ class Product extends BaseModel
 
 class Quantity extends BaseModel
 {
-    public int $value, $session, $stocking;
-    public String $sql;
-    public $stmt;
-
-    public function __construct(?array $data = null)
+    public function __construct()
     {
-        parent::__construct($data);
+        parent::__construct();
     }
 
-    public function create(): Quantity
+    public static function create($args): Quantity
     {
-        return $this;
+
+        $quantity = new Quantity;
+        $quantity->session = $args->session;
+
+        
+        $sql = "INSERT INTO quantity(stocking, `session`, `value`) 
+                VALUES(
+                    (SELECT stocking FROM stocking WHERE stocking.product = :product), 
+                    :session, 
+                    :value
+                    )";
+
+        $stmt = self::$db->prepare($sql);
+        $stmt->bindParam(':product', $quantity->product);
+        $stmt->bindValue(':session', $quantity->session);
+        $stmt->bindParam(':value', $quantity->value);
+
+        foreach($args->data as $key => $value):
+            $quantity->product = $value->product;
+            $quantity->value = $value->quantity;
+
+            try {
+                $stmt->execute();
+            } catch (PDOException $e) {
+                //handle the exception
+                die($e->getMessage());
+            }
+        endforeach;
+
+        //return an empty model;
+        return new Quantity;
     }
     //given a session id, get all the products and related quantites
-    public function getItems($session){
+    public function getItems($session)
+    {
         $sql = "SELECT 
                     name, barcode, sell_price, value
                 FROM 
-                    product 
-                        INNER JOIN stocking ON stocking.product = product.product
-                        INNER JOIN quantity ON stocking.stocking = quantity.stocking
+                    quantity
+                        INNER JOIN stocking ON stocking.stocking = quantity.stocking
+                        INNER JOIN product ON stocking.product = product.product
                 WHERE 
                     quantity.session= '$session'";
-        
-        if(!$result = self::$db->query($sql)){
-            return $result;
-        }else{
-            return $result->fetchAll(PDO::FETCH_OBJ);
-        }
-    }
-
-    public function exists(): bool
-    {
-        return false;
+        $result = self::$db->query($sql);
+        return $result->fetchAll(PDO::FETCH_OBJ);
     }
 
     public function getPrimary(): int
@@ -276,53 +317,47 @@ class Quantity extends BaseModel
 
 class Session extends BaseModel
 {
-    public String $date, $direction;
-    public int $station, $staff, $session, $_id;
-    
-
-    public function __construct(?array $data = null)
+    public String $date, $direction, $station, $staff, $session;
+   
+    public function __construct()
     {
-        parent::__construct($data);
+        parent::__construct();
     }
 
 
-    public function create(): Session
+    public static function create($args): Session
     {
-        $this->station = intval(parent::__get('station'));
-        $this->staff = intval(parent::__get('staff'));
-        $this->direction = parent::__get('direction');
-        $this->date = parent::__get('date');
+        $session = new Session;
+        $session->station = $args->station;
+        $session->staff = $args->staff;
+        $session->direction = $args->direction;
+        if(isset($args->date)){
+            $session->date = $args->date;
+            $date = new DateTime();
+            $parsed = $date->format('Y-m-d H:i:s');
+        }else{
+            $date = new DateTime();
+            $session->date = $date->format('Y-m-d H:i:s');
+        }
 
         $sql = "INSERT INTO " . self::$tableName .
             "(staff, station, direction, date) 
             VALUES
-            ('$this->staff', '$this->station', '$this->direction', NOW())";
+            ('$session->staff', '$session->station', '$session->direction', '$session->date')";
 
-        try {
-            $res = self::$db->exec($sql);
-            if ($res != false) {
-                $this->_id = self::$db->lastInsertId();
+            try {
+            if (self::$db->exec($sql)) {
+                $session->session = self::$db->lastInsertId();
             }
         } catch (PDOException $e) {
             die($e->getMessage());
         }
-        return $this;
+        return $session;
     }
 
-    public function records(): array
-    {
-        $sql = "SELECT 
-                    *
-                FROM 
-                    session
-                ORDER BY 
-                    date ASC";
-        
-        $result = self::$db->query($sql);
-        return $result->fetchAll(PDO::FETCH_CLASS, __CLASS__);
-    }
     //given a session get the details about staff and station
-    public static function getSessionDetails($sessionId){
+    public static function getSessionDetails($sessionId)
+    {
         $sql = "SELECT 
                     staff.name, station.name, session.direction, session.date 
                 FROM
@@ -330,14 +365,11 @@ class Session extends BaseModel
                         INNER JOIN staff ON session.staff = staff.staff
                         INNER JOIN station ON session.station = station.station
                 WHERE session = '$sessionId'";
-        
+
         $result = self::$db->query($sql);
         return $result->fetchObject();
     }
-    public function exists(): bool
-    {
-        return false;
-    }
+    
     public function getPrimary(): int
     {
         if (!isset($this->session)) {
@@ -349,39 +381,37 @@ class Session extends BaseModel
 
 class Staff extends BaseModel
 {
-    public string $staff, $name;
-    public function __construct(?array $data = null)
+    public string $staff, $name, $image;
+    public function __construct()
     {
-        parent::__construct($data);
+        parent::__construct();
     }
 
-    public function create(): Staff
+    public static function create($args): Staff
     {
-        //get the name of tthe staff member saved in parent class
-        $this->name = parent::__get('name');
+        $staff = new Staff;
+        $staff->name = $args->name;
+        $staff->image = $args->image;
 
         //check if the staff exists. return if true otherwise insert new 
-        if (!$this->exists()) {
-            $sql = "INSERT into "
-                . self::$tableName
-                . "(name) 
-                    VALUES('$this->name')";
+        $sql = "INSERT into " . self::$tableName . "(name, image) 
+                VALUES(
+                    :name,
+                    (SELECT image FROM image WHERE name = :image)
+                )";
+        $stmt = self::$db->prepare($sql);
 
-            // echo $sql;
-            if (self::$db->exec($sql) < 1) throw new Exception("Failed to insert product " . self::$db->errorInfo());
+        $stmt->bindParam(':name', $staff->name);
+        $stmt->bindParam(':image', $staff->image);
+
+        //check if it has inserted
+        if ($stmt->execute()) {
+            $staff->staff = self::$db->lastInsertId();
         }
 
-        return $this;
+        return $staff;
     }
 
-
-
-    public function exists(): bool
-    {
-        $sql = "SELECT COUNT(*) FROM " . self::$tableName . " WHERE name = '$this->name'";
-        $result = self::$db->query($sql);
-        return (($result->fetchColumn() > 0) ? true : false);
-    }
 
     public function getPrimary(): int
     {
@@ -395,36 +425,26 @@ class Staff extends BaseModel
 class Station extends BaseModel
 {
     public string $station, $name;
+    // public ?array $layout;
 
 
-    public function __construct(?array $data = null)
+    public function __construct()
     {
-        parent::__construct($data);
+        parent::__construct();
     }
 
-    public function exists(): bool
+    public static function create($args): Station
     {
-        $nm = self::$name;
-        $sql = "SELECT COUNT(*) FROM " . self::$tableName . " WHERE name = '$nm'";
-        $result = self::$db->query($sql);
-        return (($result->fetchColumn() > 0) ? true : false);
-    }
+        $station = new Station;
+        $station->name = $args->name;
 
-    public function create(): Station
-    {
+        $sql = "INSERT into ". self::$tableName. "(name)VALUES('$station->name')";
 
-        if (!self::exists()) {
-            $sql = "INSERT into "
-                . self::$tableName
-                . "(name) 
-                    VALUES('$this->name')";
+        if (self::$db->exec($sql) >0){
+            $station->station = self::$db->lastInsertId();
+        } 
 
-            // echo $sql;
-            if (self::$db->exec($sql) < 1) throw new Exception("Failed to insert product " . self::$db->errorInfo());
-        }
-
-
-        return $this;
+        return $station;
     }
 
     public function getPrimary(): int
