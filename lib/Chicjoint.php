@@ -72,13 +72,12 @@ class ChicJoint
         $arr = [];
 
         //fetch the products, staff and stations and save them in an associative array
-        $arr['products'] = ModelFactory::getModelRecords('product');
-        $arr['staff'] = ModelFactory::getModelRecords('staff');
-        $arr['station'] = ModelFactory::getModelRecords('station');
+        $arr['products'] = ModelController::getModelRecords('product');
+        $arr['staff'] = ModelController::getModelRecords('staff');
+        $arr['station'] = ModelController::getModelRecords('station');
         //return data to the client
         echo json_encode($arr);
     }
-
 }
 
 /**
@@ -87,155 +86,73 @@ class ChicJoint
  */
 class StockSession
 {
-    private $session_id;
-    private $product_id;
-    private $quantity_value;
-    private $stmt;
-    private $db;
-    public $log;
-    public function __construct()
-    {
-        // $this->init();
-        //create a prepared statement
-        $sql = "INSERT INTO quantity(stocking, `session`, `value`) VALUES((
-            SELECT stocking FROM stocking WHERE stocking.product = :product
-        ), :session, :value)";
-        $this->db = Database::getInstance();
-        $this->stmt = $this->db->prepare($sql);
-    }
-
-    public function init()
+    /**
+     * @method insertSessionData 
+     * This method will be used to insert data taken from a session
+     * It will conprise of two parts
+     * The first will be to insert the session details. i.e staff, station, date and direction
+     * This will help us get the session primary key which is essential in inserting the quantities
+     * The next part willl be inserting the quantites, we get them from the table posted from the client
+     */
+    public function insertSessionData()
     {
         //get post items
-        global $data;
+        global $data, $log;
         //insert session details
         $session_details = $data->data;
 
-        try {
+        $sessionData = new stdClass;
+        $sessionData->date = $session_details->session->date;
+        $sessionData->direction = $session_details->session->direction;
+        $sessionData->staff = $session_details->staff;
+        $sessionData->station = $session_details->station;
 
-            $sessionData = [
-                'date' => $session_details->session->date,
-                'direction' => $session_details->session->direction,
-                'staff' => $session_details->staff,
-                'station' => $session_details->station
-            ];
-            //session
+        $session = ModelController::createModel('session', $sessionData);
+        $log->info($session);
+        $quantityData = new stdClass;
+        $quantityData->session = $session->session;
+        $quantityData->data = $session_details->table; 
+        // $log->info($quantityData);
+        //insert quantities
+        ModelController::createModel('quantity', $quantityData);
 
-            $session = ModelFactory::createModel('session', $sessionData);
-            $stocking = ModelFactory::createModel('stocking', [
-                'session_id' => $session->_id,
-                'table' => $session_details->table,
-            ]);
-        } catch (Exception $e) {
-            $x = $e->getMessage();
-            die($x);
-        }
+        //send a http response code for inserted items
+        http_response_code(201);
+        $response = new stdClass;
+        $response->session = $session->session;
+        echo json_encode($response);
     }
-
-    public function commitSession()
-    {
-        global $data, $log;
-        $session_details = $data->data->session;
-        $direction = $session_details->direction;
-        $staff = $session_details->staff;
-        $station = $session_details->station;
-        $dateTime = new DateTime($session_details->date);
-        $date = $dateTime->format('Y-m-d H:i:s');
-
-        
-        $sql = "INSERT INTO session(date, direction, station, staff) VALUES('$date', '$direction', '$station', '$staff')";
-
-        if ($this->db->exec($sql) > 0) {
-            $this->session_id = $this->db->lastInsertId();
-        }
-
-        $this->stmt->bindParam(':session', $this->session_id);
-        $this->stmt->bindParam(':product', $this->product_id);
-        $this->stmt->bindParam(':value', $this->quantity_value);
-
-        try {
-            foreach ($data->data->table as $key) :
-                $this->product_id = $key->product;
-                $this->quantity_value = $key->quantity;
-
-                $this->stmt->execute();
-            endforeach;
-            http_response_code(201);
-            $response = new stdClass;
-            $response->session = $this->session_id;
-            echo json_encode($response);
-        } catch (PDOException $e) {
-            $log->info($e->getMessage());
-            die("Something went terribly wrong");
-        }
-    }
-
+    /**
+     * @method getSessionList 
+     * This method will be used to get all sessions in the database regardless of date direction staff or station
+     * This will be displayed in a page called sessions where the user can query the particulars of a session */    
     public static function getSessionList()
     {
-        $session = ModelFactory::getModelRecords('session');
+        $session = ModelController::getModelRecords('session');
         echo json_encode($session);
     }
 
+    /**
+     * @method getSessionDetails
+     * Given a session id, get the particulars i.e quantities products, staff, stations for that particuular session
+     */
     public static function getSessionDetails()
     {
         global $data, $log;
         $id = $data->data->id;
-        $session_details = ModelFactory::getSingleRecord('session', ['session' => $id]);
+        $session = ModelController::getSingleRecord('session', ['session' => $id]);
+        $quantity = new Quantity;
+        $table = $quantity->getItems($session->session); 
+        
+        //create an std class for returning the data to javascropt
+        $response = new stdClass;
+        $response->session_details = $session;
+        $response->table = $table;
 
-        //write a custom  sql for retrieving products and quantities
-        $sql = "SELECT 
-                    product.name, quantity.value
-                FROM 
-                    quantity 
-                        INNER JOIN session ON quantity.session = session.session
-                        INNER JOIN stocking ON quantity.stocking = stocking.stocking
-                        INNER JOIN product on product.product = stocking.product
-                WHERE
-                    session.session = '$id'";
+        //debug
+        $log->info(json_encode($response));
 
-        $result = Database::getInstance()->query($sql);
-        $table = $result->fetchAll(PDO::FETCH_OBJ);
-        $final = new stdClass;
-        $final->session_details = $session_details;
-        $final->table = $table;
-
-
-        echo json_encode($final);
-    }
-
-    public static function getRecords()
-    {
-        global $data, $log;
-        $direction = $data->data->direction;
-        $date = $data->data->date;
-        $station = $data->data->station;
-
-        $arr = [
-            'direction' => $direction,
-            'date' => $date,
-            'station' => $station
-        ];
-        $session_details = ModelFactory::getSingleRecord('session', $arr);
-
-        //write a custom  sql for retrieving products and quantities
-        $sql = "SELECT 
-                    product.name, quantity.value
-                FROM 
-                    quantity 
-                        INNER JOIN session ON quantity.session = session.session
-                        INNER JOIN stocking ON quantity.stocking = stocking.stocking
-                        INNER JOIN product on product.product = stocking.product
-                WHERE
-                    session.session = '$session_details->session'";
-
-        $result = Database::getInstance()->query($sql);
-        $table = $result->fetchAll(PDO::FETCH_OBJ);
-        $final = new stdClass;
-        $final->session_details = $session_details;
-        $final->table = $table;
-
-        $log->info($final);
-        echo json_encode($final);
+        echo json_encode($response);
     }
 }
 
@@ -249,33 +166,12 @@ class Reports
     public function salesReport()
     {
         global $data, $log;
-        $date = $data->data->date;
-
-        $session = ModelFactory::getSingleRecord('Session', ['date' => $date, 'direction' => 'out']);
-
-        if (!$session) {
-            return http_response_code(404);
         }
-        $sql = "SELECT 
-                    name, barcode, sell_price, value 
-                FROM product 
-                    INNER JOIN stocking on stocking.product = product.product 
-                    INNER JOIN quantity on stocking.stocking = quantity.stocking 
-                WHERE quantity.session = $session->getPrimary()";
-
-        $result = Database::getInstance()->query($sql);
-
-        $log->info(json_encode($result->fetchAll()));
-
-        echo json_encode($result->fetchAll());
-    }
     //get report for all stock taken at a particular day and station
     public function stockReport()
     {
         global $data, $log;
-        $date = $data->data->date;
-        $station = $data->data->station;
-
+       
         /**
          * We start by calculating the opening stock. 
          * Whats is opening stock??
@@ -289,32 +185,8 @@ class Reports
          * the user to select a different date meaning the report for the provided date cannot be produced
          * 
          */
-        
-        //create an array to hold the end result
-         $arr = array();
-         $previous_dates = "SELECT 
-                                MAX(date) as max_date 
-                            FROM 
-                                session 
-                            WHERE date < '$date' AND station = '$station' AND direction ='stock' ";
-        
-        $session_sql = "SELECT 
-                        session.*
-                    FROM 
-                        session 
-                            INNER JOIN ($previous_dates) as prev_date ON prev_date.max_date = session.date";
-        $result = Database::getInstance()->query($session_sql);
 
-        $session = $result->fetch(PDO::FETCH_OBJ);
-        if(!$session){
-            return http_response_code(404);
-        }
-        //get items from session
-        $opening = ModelFactory::executeModel('quantity', 'getItems', false, $session->session);
-        $arr['opening'] = $opening;
-        
-        echo json_encode($arr);
-    }
+      }
 }
 
 /**
