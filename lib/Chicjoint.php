@@ -173,20 +173,14 @@ class Reports
         global $data, $log;
        
         /**
-         * We start by calculating the opening stock. 
-         * Whats is opening stock??
-         * This is and *last* stock taken prior to the date provided
-         * We first calculate the maximum date less than the date provided.
-         * Then we get the stock related to that date
-         * We then get the added stock.
-         * what is added stock??
-         * This is stock whose session direction is inward to the counter.
-         * If we cannot get opening stock for the date provided means that we are either far ahead of time and prompt 
-         * the user to select a different date meaning the report for the provided date cannot be produced
-         * 
+         * Stocks report is a report of stock taken at bhat particular day vs last stock taken on previous date
+         * We get the last closing stock, calculate the new stock
+         * We also calculate the added stock for that date to get the full calculated stock
+         * Descrepancices are also calculated here
+         *  
          */
-
-      }
+        
+        }
 }
 
 /**
