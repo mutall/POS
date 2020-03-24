@@ -2,7 +2,7 @@
 // since our system will be making multiple calls to the db a single global instance of a db is needed
 // we use the singleton pattern to access the database 
 
-require_once 'config.php';
+require_once 'Config.php';
   /*
    * PDO Database Class
    * Connect to database
@@ -18,14 +18,14 @@ require_once 'config.php';
     public string $error;
     
     //save the instance of a db
-    private static ?PDO $instance;
+    private static $instance = null;
     
     
     private function __construct(){
       // Set DSN
       $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname;
       $options = array(
-        PDO::ATTR_PERSISTENT => true,
+        PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
       );
 

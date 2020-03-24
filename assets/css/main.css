@@ -35,5 +35,15 @@ section:not(.active){
   transform: scale(1.1);
 }
 #product-table_wrapper{
-  width: 30%;;
+  width: 50%;;
+}
+.no-display{
+  display: none !important;
+}
+.stock-entry{
+  display: none;
+}
+/*change cursor when hover*/
+#product-tbody > tr:hover{
+  cursor: pointer;
 }
