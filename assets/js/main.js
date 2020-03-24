@@ -439,17 +439,14 @@ class Stock extends Section {
 
             const staff = formData.get("session-staff");
             const station = formData.get("session-station");
-            const date = formData.get("session-date");
+            const date = moment(formData.get("session-date")).format("YYYY-MM-DD h:mm:ss");
             const direction = formData.get("session-direction");
             const status = formData.get("session-status");
 
             const staffId = Storage.getFromLs('staff').filter(item => item.name == staff)[0].staff;
             const stationId = Storage.getFromLs('station').filter(item => item.name == station)[0].station;
 
-            // console.log(staffId);
-            // console.log(stationId);
-
-
+            
             const details = {
                 staff: staffId,
                 station: stationId,
@@ -491,7 +488,6 @@ class Stock extends Section {
                 quantity: this.quantity.value,
             });
             Storage.saveToLs('temp-table', tableLs);
-            console.log(this.currentProduct);
             if (this.data.length > 1) {
                 this.data = this.data.filter(item => parseInt(item.product) !== parseInt(this.currentProduct.product));
                 this.currentProduct = this.data[0];
@@ -522,7 +518,7 @@ class Stock extends Section {
 
                     const postData = {
                         class: "StockSession",
-                        method: "commitSession",
+                        method: "insertSessionData",
                         state: false,
                         data: {
                             session,
