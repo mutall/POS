@@ -435,31 +435,3 @@ class Station extends BaseModel
         return intval($this->station);
     }
 }
-
-class Stocking extends BaseModel
-{
-    public int $buy_price, $sell_price, $business, $product;
-
-
-    public function __construct(?array $data = null)
-    {
-        parent::__construct($data);
-    }
-
-    public function create(): object
-    {
-        //insert quantity
-
-        return new stdClass;
-    }
-
-    public function exists(): bool
-    {
-        return false;
-    }
-
-    public function getPrimary(): int
-    {
-        return 0;
-    }
-}
