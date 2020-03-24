@@ -11,7 +11,9 @@ require __DIR__ . '/BaseModel.php';
 require __DIR__ . '/../vendor/autoload.php';
 /**
  * Set up logging library for debugging
- * We use monolog for debugging
+ * We use monolog for debugging.
+ * Monolog sends your logs to files, sockets, inboxes, databases and various web services. 
+ * Official documentation can bee found in https://github.com/Seldaek/monolog
  */
 
 use Monolog\Logger;
@@ -21,7 +23,13 @@ use Monolog\Handler\StreamHandler;
 $log = new Logger('POS');
 $log->pushHandler(new StreamHandler(__DIR__ . '/../app.log', Logger::INFO));
 
-//get post data from javascript
+/**
+ * Since the point of sale heavily relies on ajax requests we get the post requests from javascript 
+ * The javascript request needs to have atleast 3parameters-:
+ * Class: This represents the class that will be instatiated
+ * Method: this represents the method that will be invoked
+ * State: Whether the method is static or not
+ */
 $data = json_decode(file_get_contents('php://input'));
 
 //check for class and method variables
@@ -52,18 +60,22 @@ function run($class, $method, $static = false)
 class ChicJoint
 {
     /**
-     * This method will be called before the system initialises.
-     * why??
-     * The querys all pull values that are always constant in the system i.e product names, staff members stations
+     * @method init
+     * This method will be used to pull out system wide values that wont change when the system is operational
+     * i.e products, staff, and stations
+     * We get this info and save them to javascri local storage and this will atleast speed up call that i have to make 
+     * to the server.  
      */
     public function init()
     {
+        //create an empty array to store the result
         $arr = [];
 
-
+        //fetch the products, staff and stations and save them in an associative array
         $arr['products'] = ModelFactory::getModelRecords('product');
         $arr['staff'] = ModelFactory::getModelRecords('staff');
         $arr['station'] = ModelFactory::getModelRecords('station');
+        //return data to the client
         echo json_encode($arr);
     }
 
@@ -130,6 +142,7 @@ class StockSession
         $dateTime = new DateTime($session_details->date);
         $date = $dateTime->format('Y-m-d H:i:s');
 
+        
         $sql = "INSERT INTO session(date, direction, station, staff) VALUES('$date', '$direction', '$station', '$staff')";
 
         if ($this->db->exec($sql) > 0) {
