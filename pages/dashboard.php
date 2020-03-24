@@ -9,11 +9,9 @@
     <!-- General CSS Files -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-    <!-- <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css"> -->
     <!-- Template CSS -->
     <link rel="stylesheet" href="../assets/css/main.css">
     <link rel="stylesheet" href="../assets/css/stisla.css">
-    <!-- <link rel="stylesheet" href="../assets/css/components.css"> -->
     <link rel="stylesheet" href="../assets/css/iziToast.min.css">
 
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
@@ -611,14 +609,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
-    <!-- <script src="../assets/js/lib/stisla.js"></script> -->
     <script src="../assets/js/lib/iziToast.min.js"></script>
     <script src="../assets/js/lib/sweetalert.min.js"></script>
 
     <!-- JS Libraies -->
 
-    <!-- Template JS File -->
-    <!-- <script src="../assets/js/lib/scripts.js"></script> -->
     <script src="../assets/js/main.js"></script>
 </body>
 
